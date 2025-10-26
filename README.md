@@ -7,7 +7,7 @@ A modern project management application built with React, TypeScript, Vite, and 
 - 🎯 **Issue Management**: Create, edit, and track issues with priority and status
 - 🏃 **Sprint Planning**: Organize work into sprints with start/end dates
 - 📊 **Kanban Board**: Visual workflow with drag-and-drop functionality
-- 👥 **User Authentication**: Secure login with email/password and OAuth (GitHub, Google)
+- 👥 **User Authentication**: Secure login with email/password only
 - 🎨 **Theme Support**: Horde (burgundy/gold) and Alliance (navy/blue) themes
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 
@@ -103,22 +103,18 @@ VITE_SUPABASE_ANON_KEY = your_supabase_anon_key
 2. Vercel will automatically build and deploy your application
 3. Your app will be available at `https://your-project.vercel.app`
 
-### 4. Supabase OAuth Configuration
+### 4. Supabase Authentication Configuration
 
-For OAuth providers (GitHub, Google) to work in production:
+For email/password authentication to work in production:
 
-1. Go to **Authentication → Providers** in Supabase dashboard
-2. Enable GitHub/Google providers:
-   - **GitHub**: Enable and configure with your GitHub OAuth app credentials
-   - **Google**: Enable and configure with your Google OAuth app credentials
-3. Configure **Site URL** and **Redirect URLs**:
+1. Go to **Authentication → Settings** in Supabase dashboard
+2. Ensure **Email/Password** provider is enabled
+3. Configure **Site URL**:
    - Site URL: `https://your-project.vercel.app`
-   - Redirect URLs: `https://your-project.vercel.app`
 4. For local development, also add:
    - Site URL: `http://localhost:5173`
-   - Redirect URLs: `http://localhost:5173`
 
-**Note**: You'll need to create OAuth applications in GitHub and Google Developer Console and configure the client IDs and secrets in Supabase.
+**Note**: The application uses email/password authentication only. OAuth providers are not configured.
 
 ## Project Structure
 
@@ -144,10 +140,9 @@ src/
 
 ## Authentication
 
-The application supports multiple authentication methods:
+The application supports email/password authentication:
 
 - **Email/Password**: Traditional login and registration
-- **OAuth**: GitHub and Google sign-in
 - **Session Management**: Automatic token refresh and persistence
 
 ### Protected Features

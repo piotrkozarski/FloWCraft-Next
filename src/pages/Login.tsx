@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../auth/AuthContext"
-import { supabase } from "../lib/supabase"
-import { Github, Shield, Sword } from "lucide-react"
+import { Shield, Sword } from "lucide-react"
 
 export default function Login() {
   const { signInWithEmail, user, loading } = useAuth()
@@ -36,20 +35,6 @@ export default function Login() {
           <Shield className="w-5 h-5" /> Sign in
         </h1>
 
-        <div className="space-y-3">
-          <button 
-            onClick={() => supabase.auth.signInWithOAuth({ provider: 'github' })}
-            className="w-full bg-[var(--primary)] text-white rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)]">
-            <Github className="w-4 h-4" /> Continue with GitHub
-          </button>
-          <button 
-            onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}
-            className="w-full rounded-md px-3 py-2 border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--panel)]">
-            Continue with Google
-          </button>
-        </div>
-
-        <div className="my-4 text-center text-[var(--muted)] text-xs">or</div>
 
         <form onSubmit={handleSignIn} className="space-y-3">
           <div>

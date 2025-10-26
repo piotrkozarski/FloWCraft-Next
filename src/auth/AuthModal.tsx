@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
-import { Github } from 'lucide-react';
 
 export function AuthModal({ open, onClose }: { open: boolean; onClose: () => void; }) {
   const { signInWithEmail } = useAuth();
@@ -28,18 +27,6 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
     } finally { setBusy(false); }
   };
 
-  const handleOAuth = async (provider: 'google' | 'github') => {
-    setError(null);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ 
-        provider,
-        options: { redirectTo: window.location.origin }
-      });
-      if (error) setError(error.message);
-    } catch (err) {
-      setError('OAuth sign-in failed');
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -72,23 +59,6 @@ export function AuthModal({ open, onClose }: { open: boolean; onClose: () => voi
           </button>
         </div>
         
-        {/* OAuth Buttons */}
-        <div className="mb-4 space-y-2">
-          <button 
-            onClick={() => handleOAuth('github')}
-            className="w-full bg-[var(--primary)] text-white rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)] transition-colors"
-          >
-            <Github className="w-4 h-4" /> Continue with GitHub
-          </button>
-          <button 
-            onClick={() => handleOAuth('google')}
-            className="w-full rounded-md px-3 py-2 border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--panel)] flex items-center justify-center gap-2 transition-colors"
-          >
-            Continue with Google
-          </button>
-        </div>
-
-        <div className="mb-4 text-center text-[var(--muted)] text-xs">or</div>
 
         <form onSubmit={submit} className="space-y-3">
           <input 

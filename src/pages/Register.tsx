@@ -9,6 +9,7 @@ export default function Register() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -24,6 +25,11 @@ export default function Register() {
     const { error } = await supabase.auth.signUp({ email, password })
     if (error) {
       setError(error.message)
+    } else {
+      setSuccess(true)
+      setTimeout(() => {
+        window.location.href = "/login"
+      }, 1000)
     }
     setIsLoading(false)
   }
@@ -44,6 +50,7 @@ export default function Register() {
               className="w-full date-input rounded-md px-3 py-2 text-sm" required minLength={6} />
           </div>
           {error && <div className="text-red-400 text-sm">{error}</div>}
+          {success && <div className="text-green-400 text-sm">Account created. You can sign in now.</div>}
           <button disabled={isLoading} 
             className="w-full bg-[var(--primary)] text-white rounded-md px-3 py-2 hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)] disabled:opacity-50">
             {isLoading ? "Creating…" : "Create account"}

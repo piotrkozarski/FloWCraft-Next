@@ -14,7 +14,6 @@ type AuthState = {
   init: () => Promise<void>
   signInWithPassword: (email: string, password: string) => Promise<void>
   signUpWithPassword: (email: string, password: string) => Promise<void>
-  signInWithOAuth: (provider: "google" | "github") => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -50,14 +49,6 @@ export const useAuth = create<AuthState>((set) => ({
     set({ loading: false, error: error?.message ?? null })
   },
 
-  signInWithOAuth: async (provider) => {
-    set({ error: null })
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin }
-    })
-    if (error) set({ error: error.message })
-  },
 
   signOut: async () => {
     await supabase.auth.signOut()
