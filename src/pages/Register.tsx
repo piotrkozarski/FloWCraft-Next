@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react"
 import { useAuth } from "../store/auth"
+import { useNavigate } from "react-router-dom"
 
 export default function Register() {
   const { signUpWithPassword, loading, error } = useAuth()
@@ -21,12 +21,15 @@ export default function Register() {
     if (!pwValid) { setLocalErr("Password must be at least 8 characters."); return }
     if (!match) { setLocalErr("Passwords do not match."); return }
     await signUpWithPassword(email, password)
-    if (!error) { setOk(true); setTimeout(()=>{ window.location.href = "/login" }, 1200) }
+    if (!error) {
+      setOk(true)
+      setTimeout(() => navigate("/login", { replace: true }), 1200)
+    }
   }
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="card rounded-xl p-6 w-full max-w-md">
+      <div className="card ornament-corners rounded-xl p-6 w-full max-w-md">
         <h1 className="section-title text-2xl mb-4">Create account</h1>
         <form onSubmit={onSubmit} className="space-y-3">
           <div>
