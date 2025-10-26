@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Issue, Sprint, IssueStatus, IssuePriority, SprintStatus, IssueType, UserRef } from '@/types';
 import { supabase } from './lib/supabase';
 
-export type SprintPatch = Partial<Pick<Sprint, "name"|"startDate"|"endDate"|"status">>
+export type SprintPatch = Partial<Pick<Sprint, "name"|"startDate"|"endDate"|"status"|"completedAt">>
 
 // Utility functions
 const pad3 = (n: number) => n.toString().padStart(3, '0');
