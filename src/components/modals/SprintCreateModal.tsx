@@ -3,8 +3,15 @@ import Modal from "../ui/Modal"
 import { useUI } from "../../store/ui"
 import { useFCStore } from "../../store"
 import type { SprintStatus } from "../../store"
+import Select, { type Option } from "../ui/Select"
 
-const STATUSES: SprintStatus[] = ["Planned","Active","Completed"]
+// const STATUSES: SprintStatus[] = ["Planned","Active","Completed"] // Removed unused constant
+
+const STATUS_OPTS: Option<SprintStatus>[] = [
+  { label: "Planned", value: "Planned" },
+  { label: "Active", value: "Active" },
+  { label: "Completed", value: "Completed" },
+]
 
 export default function SprintCreateModal() {
   const open = useUI(s => s.newSprintOpen)
@@ -54,10 +61,12 @@ export default function SprintCreateModal() {
           </div>
           <div className="sm:max-w-[220px]">
             <label className="block text-sm mb-1 text-[var(--muted)]">Status</label>
-            <select className="theme-select w-full min-w-0 rounded-md px-2 py-2 text-sm"
-                    value={status} onChange={e=>setStatus(e.target.value as SprintStatus)}>
-              {STATUSES.map(s => <option key={s}>{s}</option>)}
-            </select>
+            <Select
+              value={status}
+              onChange={setStatus}
+              options={STATUS_OPTS}
+              className="w-full"
+            />
           </div>
         </div>
 

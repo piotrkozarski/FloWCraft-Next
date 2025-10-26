@@ -1,5 +1,12 @@
 import { useState } from 'react'
 import { useFCStore, type SprintStatus } from '../store'
+import Select, { type Option } from './ui/Select'
+
+const STATUS_OPTS: Option<SprintStatus>[] = [
+  { label: "Planned", value: "Planned" },
+  { label: "Active", value: "Active" },
+  { label: "Completed", value: "Completed" },
+]
 
 export default function SprintForm() {
   const create = useFCStore(s => s.createSprint)
@@ -57,13 +64,12 @@ export default function SprintForm() {
           
           <div>
             <label className="label">Status</label>
-            <select 
-              className="select w-full" 
-              value={status} 
-              onChange={e=>setStatus(e.target.value as SprintStatus)}
-            >
-              {['Planned','Active','Completed'].map(s => <option key={s}>{s}</option>)}
-            </select>
+            <Select
+              value={status}
+              onChange={setStatus}
+              options={STATUS_OPTS}
+              className="w-full"
+            />
           </div>
         </div>
         
