@@ -245,7 +245,6 @@ export default function IssueEditModal() {
               value={description}
               onChange={e=>setDescription(e.target.value)}
             />
-            <p className="text-xs text-[var(--muted)] mt-1">Markdown mile widziany – w wersji szczegółu możemy go wyrenderować.</p>
           </div>
 
           {/* Actions */}

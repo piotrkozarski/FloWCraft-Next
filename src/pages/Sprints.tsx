@@ -28,13 +28,13 @@ export default function Sprints(){
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="font-semibold">{s.name}</div>
                   <Chip>{s.status}</Chip>
-                  <div className="text-sm text-slate-500">[{s.startDate} → {s.endDate}]</div>
+                  <div className="text-sm text-[var(--muted)]">[{s.startDate} → {s.endDate}]</div>
                   <div className="ml-auto flex gap-2">
                     {s.status === "Planned" && (
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => ui.openSprintEdit(s.id)}
-                          className="p-2 rounded-md hover:bg-gray-800 text-gray-300"
+                          className="p-2 rounded-md hover:bg-[color-mix(in_oklab,var(--panel) 85%,black 15%)] text-[var(--text)]"
                           title="Edit sprint"
                         >
                           <Pencil className="w-4 h-4" />
@@ -45,7 +45,7 @@ export default function Sprints(){
                             message: "This action cannot be undone.",
                             onConfirm: () => { deleteSprint(s.id); ui.closeConfirm() }
                           })}
-                          className="p-2 rounded-md hover:bg-gray-800 text-red-400"
+                          className="p-2 rounded-md hover:bg-[color-mix(in_oklab,var(--panel) 85%,black 15%)] text-red-400"
                           title="Delete sprint"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -58,7 +58,7 @@ export default function Sprints(){
                 </div>
                 <div className="mt-3">
                   <div className="progress"><i style={{ width: `${pct}%` }} /></div>
-                  <div className="mt-1 text-xs text-slate-500">{done}/{inSprint.length} completed • {pct}%</div>
+                  <div className="mt-1 text-xs text-[var(--muted)]">{done}/{inSprint.length} completed • {pct}%</div>
                 </div>
               </div>
             )

@@ -10,6 +10,9 @@
   --primary: #8B0000;     /* karmazyn */
   --accent: #B4A57A;      /* stare złoto */
   --glow: 0 0 20px rgba(139,0,0,.35);
+  --heading: var(--accent);           /* złoto */
+  --heading-shadow: rgba(0,0,0,.55);  /* kontrast na burgundzie */
+  --select-hover: color-mix(in oklab, var(--primary) 20%, black 80%);
 }
 
 :root[data-theme="alliance"]{
@@ -22,6 +25,86 @@
   --primary: #1E40AF;     /* royal blue */
   --accent: #F5D06F;      /* złoto */
   --glow: 0 0 20px rgba(30,64,175,.35);
+  --heading: var(--accent);           /* złoto w Alliance */
+  --heading-shadow: rgba(0,0,0,.55);
+  --select-hover: color-mix(in oklab, var(--primary) 20%, black 80%);
+}
+
+/* Tytuły sekcji („Create New Sprint", „Sprints") */
+.section-title{
+  color: var(--heading);
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-shadow:
+    0 1px 0 var(--heading-shadow),
+    0 0 14px rgba(0,0,0,.35);
+}
+
+/* ------------------------------
+   Improved contrast for <select> options
+   ------------------------------ */
+.theme-select {
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  appearance: none;
+}
+
+.theme-select option {
+  background-color: color-mix(in oklab, var(--surface) 95%, black 5%);
+  color: var(--text);
+}
+
+/* Hovered or selected option — highlight with accent */
+.theme-select option:hover,
+.theme-select option:checked,
+.theme-select option:focus {
+  background-color: var(--accent);
+  color: var(--text);
+}
+
+/* For dark background on Windows system dropdown */
+select.theme-select:-internal-list-box,
+select.theme-select::-ms-expand {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+/* For Firefox fallback */
+@-moz-document url-prefix() {
+  .theme-select option {
+    background-color: var(--surface) !important;
+    color: var(--text) !important;
+  }
+  .theme-select option:checked {
+    background-color: var(--accent) !important;
+  }
+}
+
+.theme-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Daty – lepsza widoczność cyfr i ikon */
+.date-input{
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.date-input:focus{
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Ikona kalendarza (WebKit) – rozjaśnij i dopasuj do akcentu */
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter: invert(85%) sepia(12%) saturate(150%) hue-rotate(330deg) brightness(1.05) contrast(1.1);
+  opacity: .95;
+}
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper{
+  color: var(--text);
 }
 
 /* global */

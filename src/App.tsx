@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom"
-import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, Share2, BarChart2, PlusCircle, Sword, Shield } from "lucide-react"
+import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, BarChart2, PlusCircle, Sword, Shield } from "lucide-react"
 import { useUI } from "./store/ui"
 import { useTheme } from "./store/theme"
 import IssueCreateModal from "./components/modals/IssueCreateModal"
@@ -24,7 +24,6 @@ export default function App() {
             <NavLink to="/" end><ListTodo className="w-4 h-4" /> Issues</NavLink>
             <NavLink to="/current"><PlayCircle className="w-4 h-4" /> Current Sprint</NavLink>
             <NavLink to="/sprints"><LayoutDashboard className="w-4 h-4" /> Sprints</NavLink>
-            <NavLink to="/dependencies"><Share2 className="w-4 h-4" /> Dependency Map</NavLink>
             <NavLink to="/reports"><BarChart2 className="w-4 h-4" /> Reports</NavLink>
           </nav>
           <div className="px-3 py-2 mt-4 space-y-1">

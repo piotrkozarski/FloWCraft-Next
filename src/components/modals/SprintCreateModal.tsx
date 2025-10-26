@@ -36,25 +36,25 @@ export default function SprintCreateModal() {
     <Modal open={open} onClose={close} title="Create Sprint" width="max-w-xl">
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm mb-1 text-gray-300">Sprint Name</label>
-          <input className="w-full rounded-md bg-gray-950 border border-gray-700 px-3 py-2 text-sm"
+          <label className="block text-sm mb-1 text-[var(--muted)]">Sprint Name</label>
+          <input className="w-full rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] px-3 py-2 text-sm"
                  placeholder="np. Q4 Kickoff" value={name} onChange={e=>setName(e.target.value)} autoFocus />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:max-w-[220px]">
-            <label className="block text-sm mb-1 text-gray-300">Start Date</label>
-            <input type="date" className="w-full min-w-0 rounded-md bg-gray-950 border border-gray-700 px-3 py-2 text-sm"
+            <label className="block text-sm mb-1 text-[var(--muted)]">Start Date</label>
+            <input type="date" className="date-input w-full min-w-0 rounded-md px-3 py-2 text-sm"
                    value={startDate} onChange={e=>setStartDate(e.target.value)} />
           </div>
           <div className="sm:max-w-[220px]">
-            <label className="block text-sm mb-1 text-gray-300">End Date</label>
-            <input type="date" className="w-full min-w-0 rounded-md bg-gray-950 border border-gray-700 px-3 py-2 text-sm"
+            <label className="block text-sm mb-1 text-[var(--muted)]">End Date</label>
+            <input type="date" className="date-input w-full min-w-0 rounded-md px-3 py-2 text-sm"
                    value={endDate} onChange={e=>setEndDate(e.target.value)} />
           </div>
           <div className="sm:max-w-[220px]">
-            <label className="block text-sm mb-1 text-gray-300">Status</label>
-            <select className="w-full min-w-0 rounded-md bg-gray-950 border border-gray-700 px-2 py-2 text-sm"
+            <label className="block text-sm mb-1 text-[var(--muted)]">Status</label>
+            <select className="theme-select w-full min-w-0 rounded-md px-2 py-2 text-sm"
                     value={status} onChange={e=>setStatus(e.target.value as SprintStatus)}>
               {STATUSES.map(s => <option key={s}>{s}</option>)}
             </select>
