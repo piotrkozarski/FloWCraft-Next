@@ -1,7 +1,10 @@
 import { NavLink, Outlet } from "react-router-dom"
-import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, BarChart2, PlusCircle, Sword, Shield } from "lucide-react"
+import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, BarChart2, PlusCircle, Sword, Shield, LogOut } from "lucide-react"
+import { useState } from "react"
 import { useUI } from "./store/ui"
 import { useTheme } from "./store/theme"
+import { useAuth } from "./auth/AuthContext"
+import { AuthModal } from "./auth/AuthModal"
 import IssueCreateModal from "./components/modals/IssueCreateModal"
 import SprintCreateModal from "./components/modals/SprintCreateModal"
 import SprintEditModal from "./components/modals/SprintEditModal"
@@ -11,6 +14,24 @@ export default function App() {
   const openIssue = useUI(s => s.openIssue)
   const openSprint = useUI(s => s.openSprint)
   const { mode, toggle, setMode } = useTheme()
+  const { user, signOut } = useAuth()
+  const [authOpen, setAuthOpen] = useState(false)
+
+  const handleNewIssue = () => {
+    if (!user) {
+      setAuthOpen(true)
+      return
+    }
+    openIssue()
+  }
+
+  const handleCreateSprint = () => {
+    if (!user) {
+      setAuthOpen(true)
+      return
+    }
+    openSprint()
+  }
 
   return (
     <div className="layout">
@@ -27,10 +48,10 @@ export default function App() {
             <NavLink to="/reports"><BarChart2 className="w-4 h-4" /> Reports</NavLink>
           </nav>
           <div className="px-3 py-2 mt-4 space-y-1">
-            <button onClick={openIssue} className="w-full text-left px-3 py-2 rounded-md bg-[var(--panel)] hover:bg-[color-mix(in_oklab,var(--primary) 70%,transparent)] text-sm border border-default hover:shadow-[var(--glow)] transition-all">
+            <button onClick={handleNewIssue} className="w-full text-left px-3 py-2 rounded-md bg-[var(--panel)] hover:bg-[color-mix(in_oklab,var(--primary) 70%,transparent)] text-sm border border-default hover:shadow-[var(--glow)] transition-all">
               + Create Issue
             </button>
-            <button onClick={openSprint} className="w-full text-left px-3 py-2 rounded-md bg-[var(--panel)] hover:bg-[color-mix(in_oklab,var(--primary) 70%,transparent)] text-sm border border-default hover:shadow-[var(--glow)] transition-all">
+            <button onClick={handleCreateSprint} className="w-full text-left px-3 py-2 rounded-md bg-[var(--panel)] hover:bg-[color-mix(in_oklab,var(--primary) 70%,transparent)] text-sm border border-default hover:shadow-[var(--glow)] transition-all">
               + Create Sprint
             </button>
           </div>
@@ -66,14 +87,49 @@ export default function App() {
             Switch to {mode === "horde" ? "Alliance" : "Horde"}
           </button>
         </div>
+
+        {user && (
+          <div className="p-3 border-t border-default">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs text-[var(--muted)] truncate">{user.email}</span>
+            </div>
+            <button onClick={signOut} 
+              className="w-full px-2 py-1.5 rounded-md border border-default hover:bg-[var(--surface)] flex items-center gap-1 text-sm">
+              <LogOut className="w-4 h-4" /> Sign out
+            </button>
+          </div>
+        )}
       </aside>
 
       <div className="page">
         <div className="page-header">
           <h1>All Issues</h1>
-          <button onClick={openIssue} className="inline-flex items-center gap-1 bg-[var(--primary)] text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)] border border-default shadow-[var(--glow)] hover:shadow-[var(--glow)] transition-all">
-            <PlusCircle className="w-4 h-4" /> New Issue
-          </button>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm opacity-80">{user.email}</span>
+                <button 
+                  className="px-3 py-1.5 rounded-md border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--panel)] text-sm"
+                  onClick={() => signOut()}
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <button 
+                className="px-3 py-1.5 rounded-md bg-[var(--primary)] text-white text-sm hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)]"
+                onClick={() => setAuthOpen(true)}
+              >
+                Sign in
+              </button>
+            )}
+            <button 
+              onClick={handleNewIssue} 
+              className="inline-flex items-center gap-1 bg-[var(--primary)] text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)] border border-default shadow-[var(--glow)] hover:shadow-[var(--glow)] transition-all"
+            >
+              <PlusCircle className="w-4 h-4" /> New Issue
+            </button>
+          </div>
         </div>
         <div className="page-content">
           <Outlet />
@@ -84,6 +140,7 @@ export default function App() {
       <SprintCreateModal />
       <SprintEditModal />
       <IssueEditModal />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   )
 }
