@@ -32,22 +32,33 @@ export default function Register() {
 
     try {
       const result = await signUpWithPassword(email, password)
+      console.log('Registration result:', result)
       
-      // Check if there's an error from the auth store
-      if (error) {
-        setLocalErr(error)
+      if (!result.success) {
+        setLocalErr(result.error || "Registration failed. Please try again.")
         return
       }
       
-      // Try to get the user and create profile
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          await supabase.from("profiles").upsert({ id: user.id, email: user.email, username })
+      if (result.requiresConfirmation) {
+        // Email confirmation required
+        setOk(true)
+        setLocalErr(null)
+        setTimeout(() => navigate("/login", { replace: true }), 3000)
+        return
+      }
+      
+      // User is immediately signed in (no email confirmation required)
+      if (result.user) {
+        try {
+          await supabase.from("profiles").upsert({ 
+            id: result.user.id, 
+            email: result.user.email, 
+            username 
+          })
+        } catch (profileError) {
+          console.error('Profile creation error:', profileError)
+          // Don't fail the registration if profile creation fails
         }
-      } catch (profileError) {
-        console.error('Profile creation error:', profileError)
-        // Don't fail the registration if profile creation fails
       }
       
       setOk(true)
@@ -102,7 +113,9 @@ export default function Register() {
           )}
           {localErr && <div className="text-red-400 text-sm">{localErr}</div>}
           {error && <div className="text-red-400 text-sm">{error}</div>}
-          {ok && <div className="text-green-400 text-sm">Account created. Check your email to confirm.</div>}
+          {ok && <div className="text-green-400 text-sm">
+            Account created successfully! {error ? "Check your email to confirm your account." : "You can now log in."}
+          </div>}
 
           <button disabled={!canSubmit}
             className="w-full btn-primary rounded-md px-3 py-2 disabled:opacity-50">

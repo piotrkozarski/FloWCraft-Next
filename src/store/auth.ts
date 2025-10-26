@@ -76,10 +76,25 @@ export const useAuth = create<AuthState>((set, get) => ({
       )
       
       console.log('Auth store: SignUp result:', { data, error })
-      set({ loading: false, error: error?.message ?? null })
+      
+      if (error) {
+        set({ loading: false, error: error.message })
+        return { success: false, error: error.message }
+      }
+      
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        console.log('Auth store: Email confirmation required')
+        set({ loading: false, error: null })
+        return { success: true, requiresConfirmation: true, user: data.user }
+      }
+      
+      set({ loading: false, error: null })
+      return { success: true, requiresConfirmation: false, user: data.user }
     } catch (err) {
       console.error('Auth store: SignUp error:', err)
       set({ loading: false, error: 'Registration failed. Please try again.' })
+      return { success: false, error: 'Registration failed. Please try again.' }
     }
   },
 
