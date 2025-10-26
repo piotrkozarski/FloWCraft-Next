@@ -1,14 +1,13 @@
 import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
-import type { Issue, IssueStatus } from '../types'
-import type { Priority } from '../constants/priority'
+import type { Issue, IssueStatus, IssuePriority } from '@/types'
 import Badge from './ui/Badge'
 import Avatar from './ui/Avatar'
 import { fetchProfiles } from '../services/users'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
-const priorities: Priority[] = ['P0','P1','P2','P3','P4','P5']
+const priorities: IssuePriority[] = ['Low','Medium','High','Critical']
 
 // Removed unused functions: getStatusIcon, getStatusColor
 

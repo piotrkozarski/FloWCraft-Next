@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
-import type { Issue, Status } from '../store'
+import type { Issue, IssueStatus } from '@/types'
 
-const statuses: Status[] = ['Todo','In Progress','In Review','Done']
+const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
-const getStatusIcon = (status: Status) => {
-  const icons = {
+const getStatusIcon = (status: IssueStatus) => {
+  const icons: Record<IssueStatus, string> = {
     'Todo': 'assignment',
     'In Progress': 'play_arrow',
     'In Review': 'visibility',
@@ -21,7 +21,7 @@ interface StatusCardsProps {
 
 export default function StatusCards({ issues }: StatusCardsProps) {
   console.log('StatusCards rendered with:', { issues })
-  const getStatusCount = (status: Status) => {
+  const getStatusCount = (status: IssueStatus) => {
     return issues.filter(issue => issue.status === status).length
   }
 

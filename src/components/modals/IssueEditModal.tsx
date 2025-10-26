@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from "react"
 import Modal from "../ui/Modal"
 import { useUI } from "../../store/ui"
 import { useFCStore } from "../../store"
-import type { Issue, IssueType, IssuePriority, IssueStatus } from "../../types"
+import type { Issue, IssueType, IssuePriority, IssueStatus } from "@/types"
 import ConfirmModal from "../ui/ConfirmModal"
 import { Search, ChevronDown, X } from "lucide-react"
-import Select, { Option } from "../ui/Select"
+import Select from "../ui/Select"
+import type { Option } from "../ui/Select"
 import { fetchProfiles } from "../../services/users"
 
 const TYPES: IssueType[] = ["Bug","Task","Feature","Story"]
-const PRIORITIES: IssuePriority[] = ["P0","P1","P2","P3","P4","P5"]
+const PRIORITIES: IssuePriority[] = ["Low","Medium","High","Critical"]
 const STATUSES: IssueStatus[] = ["Todo","In Progress","In Review","Done"]
 
 export default function IssueEditModal() {

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useFCStore, type Status } from '../store'
-import type { Priority } from '../constants/priority'
+import { useFCStore } from '../store'
+import type { IssueStatus } from '@/types'
+import type { IssuePriority } from '@/types'
 
-const priorities: Priority[] = ['P0','P1','P2','P3','P4','P5']
-const statuses: Status[] = ['Todo','In Progress','In Review','Done']
+const priorities: IssuePriority[] = ['Low','Medium','High','Critical']
+const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
 export default function IssueForm() {
   const createIssue = useFCStore(s => s.createIssue)

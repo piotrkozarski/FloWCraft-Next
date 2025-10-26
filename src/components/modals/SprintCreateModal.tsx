@@ -2,7 +2,7 @@ import { useState, useMemo } from "react"
 import Modal from "../ui/Modal"
 import { useUI } from "../../store/ui"
 import { useFCStore } from "../../store"
-import type { SprintStatus } from "../../types"
+import type { SprintStatus } from "@/types"
 import Select, { type Option } from "../ui/Select"
 
 // const STATUSES: SprintStatus[] = ["Planned","Active","Completed"] // Removed unused constant

@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { motion } from 'framer-motion'
-import { useFCStore, type Status } from '../store'
-import type { Issue } from '../store'
+import { useFCStore } from '../store'
+import type { Issue, IssueStatus } from '@/types'
 import Badge from './ui/Badge'
 import Avatar from './ui/Avatar'
 
-const statuses: Status[] = ['Todo','In Progress','In Review','Done']
+const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
-const getStatusIcon = (status: Status) => {
-  const icons = {
+const getStatusIcon = (status: IssueStatus) => {
+  const icons: Record<IssueStatus, string> = {
     'Todo': 'assignment',
     'In Progress': 'play_arrow',
     'In Review': 'visibility',

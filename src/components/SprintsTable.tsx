@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
-import type { Sprint, SprintStatus } from '../types'
+import type { Sprint, SprintStatus } from '@/types'
 
 const statuses: SprintStatus[] = ['Planned', 'Active', 'Completed']
 

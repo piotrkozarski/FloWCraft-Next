@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useFCStore, type SprintStatus } from '../store'
+import { useFCStore } from '../store'
+import type { SprintStatus } from '@/types'
 import Select, { type Option } from './ui/Select'
 
 const STATUS_OPTS: Option<SprintStatus>[] = [

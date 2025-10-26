@@ -1,5 +1,5 @@
 // import { useFCStore } from '../store' // Removed unused import
-import type { Sprint } from '../store'
+import type { Sprint } from '@/types'
 
 interface SprintSummaryProps {
   sprint: Sprint
