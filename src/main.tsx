@@ -8,6 +8,7 @@ import Sprints from './pages/Sprints'
 import Reports from './pages/Reports'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import AuthCallback from './pages/AuthCallback'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import { AuthProvider } from './auth/AuthContext'
 import './index.css'
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <Register />
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallback />
   },
   {
     path: '/',

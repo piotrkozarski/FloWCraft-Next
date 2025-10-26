@@ -45,7 +45,10 @@ export const useAuth = create<AuthState>((set) => ({
 
   signUpWithPassword: async (email, password) => {
     set({ loading: true, error: null })
-    const { error } = await supabase.auth.signUp({ email, password })
+    const redirectTo = `${window.location.origin}/auth/callback`
+    const { error } = await supabase.auth.signUp(
+      { email, password, options: { emailRedirectTo: redirectTo } }
+    )
     set({ loading: false, error: error?.message ?? null })
   },
 
