@@ -19,7 +19,20 @@ export default function Login() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setLocalError(null)
-    await signInWithPassword(email, password)
+    console.log('Login: Starting sign in...')
+    
+    try {
+      const result = await signInWithPassword(email, password)
+      console.log('Login result:', result)
+      
+      if (!result.success) {
+        setLocalError(result.error || "Login failed. Please try again.")
+      }
+      // If successful, the useEffect will handle navigation when user state updates
+    } catch (err) {
+      console.error('Login error:', err)
+      setLocalError("Login failed. Please try again.")
+    }
   }
 
   return (

@@ -3,11 +3,17 @@ import { supabase } from "../lib/supabase"
 
 async function ensureProfile() {
   try {
+    console.log('ensureProfile: Starting...')
     const authUser = (await supabase.auth.getUser()).data.user
-    if (!authUser) return
+    if (!authUser) {
+      console.log('ensureProfile: No auth user found')
+      return
+    }
     const { id, email } = authUser
+    console.log('ensureProfile: Creating/updating profile for user:', id)
     // jeśli brak rekordu, utwórz pusty z samym email; username uzupełnimy przy rejestracji
     await supabase.from("profiles").upsert({ id, email }, { onConflict: "id" })
+    console.log('ensureProfile: Profile ensured successfully')
   } catch (error) {
     console.error('Error ensuring profile:', error)
   }
@@ -24,7 +30,11 @@ type AuthState = {
   loading: boolean
   error?: string | null
   init: () => Promise<void>
-  signInWithPassword: (email: string, password: string) => Promise<void>
+  signInWithPassword: (email: string, password: string) => Promise<{
+    success: boolean
+    error?: string
+    user?: User | null
+  }>
   signUpWithPassword: (email: string, password: string) => Promise<{
     success: boolean
     error?: string
@@ -55,17 +65,38 @@ export const useAuth = create<AuthState>((set, get) => ({
     supabase.auth.onAuthStateChange((_event, sess) => {
       const u = sess?.user
       set({ user: u ? { id: u.id, email: u.email ?? null, avatar_url: u.user_metadata?.avatar_url } : null })
-      // Ensure profile exists after auth state change
-      ensureProfile().catch(error => {
-        console.error('Error in auth state change ensureProfile:', error)
-      })
+      // Ensure profile exists after auth state change with timeout
+      if (u) {
+        Promise.race([
+          ensureProfile(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('ensureProfile timeout')), 5000))
+        ]).catch(error => {
+          console.error('Error in auth state change ensureProfile:', error)
+        })
+      }
     })
   },
 
   signInWithPassword: async (email, password) => {
     set({ loading: true, error: null })
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    set({ loading: false, error: error?.message ?? null })
+    console.log('Auth store: Starting signInWithPassword...')
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      console.log('Auth store: SignIn result:', { data, error })
+      
+      if (error) {
+        set({ loading: false, error: error.message })
+        return { success: false, error: error.message }
+      }
+      
+      set({ loading: false, error: null })
+      return { success: true, user: data.user }
+    } catch (err) {
+      console.error('Auth store: SignIn error:', err)
+      set({ loading: false, error: 'Login failed. Please try again.' })
+      return { success: false, error: 'Login failed. Please try again.' }
+    }
   },
 
   signUpWithPassword: async (email, password) => {
