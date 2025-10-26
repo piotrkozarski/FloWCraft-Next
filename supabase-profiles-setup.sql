@@ -24,3 +24,4 @@ create policy "users can update their own profile"
 on public.profiles for update
 to authenticated
 using (auth.uid() = id);
+

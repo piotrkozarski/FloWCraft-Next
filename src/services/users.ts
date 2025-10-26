@@ -7,3 +7,4 @@ export async function fetchProfiles(): Promise<Profile[]> {
   if (error) { console.error(error); return [] }
   return data || []
 }
+
