@@ -21,7 +21,17 @@ export default function CurrentSprint() {
           <div className="font-semibold text-primary">Sprint: "{sprint.name}"</div>
           <div className="text-sm text-gray-400">{sprint.startDate} → {sprint.endDate}</div>
         </div>
-        <button className="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-700 border border-gray-600 hover:bg-gray-600">End Sprint</button>
+        {sprint.status === 'Active' && (
+          <button 
+            onClick={() => {
+              const endSprint = useFCStore.getState().endSprint
+              endSprint(sprint.id)
+            }}
+            className="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-700 border border-gray-600 hover:bg-gray-600"
+          >
+            End Sprint
+          </button>
+        )}
       </div>
 
       <div className="board">

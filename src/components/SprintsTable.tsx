@@ -283,20 +283,22 @@ export default function SprintsTable({ sprints }: { sprints: Sprint[] }) {
                     {/* Actions */}
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => startSprint(sprint.id)}
-                          disabled={sprint.status === 'Active'}
-                          className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          Start
-                        </button>
-                        <button
-                          onClick={() => endSprint(sprint.id)}
-                          disabled={sprint.status === 'Completed'}
-                          className="px-3 py-1.5 text-xs font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          End
-                        </button>
+                        {sprint.status === 'Planned' && (
+                          <button
+                            onClick={() => startSprint(sprint.id)}
+                            className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                          >
+                            Start
+                          </button>
+                        )}
+                        {sprint.status === 'Active' && (
+                          <button
+                            onClick={() => endSprint(sprint.id)}
+                            className="px-3 py-1.5 text-xs font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 transition-colors"
+                          >
+                            End
+                          </button>
+                        )}
                       </div>
                     </td>
                   </motion.tr>

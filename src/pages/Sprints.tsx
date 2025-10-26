@@ -52,8 +52,12 @@ export default function Sprints(){
                         </button>
                       </div>
                     )}
-                    <Button variant="secondary" onClick={()=>start(s.id)} disabled={s.status==='Active'}>Start</Button>
-                    <Button variant="outline" onClick={()=>end(s.id)} disabled={s.status==='Completed'}>End</Button>
+                    {s.status === 'Planned' && (
+                      <Button variant="secondary" onClick={()=>start(s.id)}>Start</Button>
+                    )}
+                    {s.status === 'Active' && (
+                      <Button variant="outline" onClick={()=>end(s.id)}>End</Button>
+                    )}
                   </div>
                 </div>
                 <div className="mt-3">
