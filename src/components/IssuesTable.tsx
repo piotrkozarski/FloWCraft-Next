@@ -15,7 +15,7 @@ interface FilterState {
   title: string
   status: string
   priority: string
-  assignee: string
+  assigneeId: string
   sprint: string
 }
 
@@ -43,7 +43,7 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
     title: '',
     status: '',
     priority: '',
-    assignee: '',
+    assigneeId: '',
     sprint: ''
   })
 
@@ -66,8 +66,8 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
         return false
       }
       
-      // Filtrowanie po assignee (minimum 3 znaki)
-      if (filters.assignee.length >= 3 && !(issue.assignee?.toLowerCase().includes(filters.assignee.toLowerCase()) ?? false)) {
+      // Filtrowanie po assigneeId (minimum 3 znaki)
+      if (filters.assigneeId.length >= 3 && !(issue.assigneeId?.toLowerCase().includes(filters.assigneeId.toLowerCase()) ?? false)) {
         return false
       }
       
@@ -191,17 +191,17 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
                 <div className="flex items-center gap-2">
                   <span>Assignee</span>
                   <button
-                    onClick={() => setActiveFilter(activeFilter === 'assignee' ? null : 'assignee')}
+                    onClick={() => setActiveFilter(activeFilter === 'assigneeId' ? null : 'assigneeId')}
                     className="text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     🔍
                   </button>
                 </div>
-                {activeFilter === 'assignee' && (
+                {activeFilter === 'assigneeId' && (
                   <input
                     type="text"
-                    value={filters.assignee}
-                    onChange={(e) => handleFilterChange('assignee', e.target.value)}
+                    value={filters.assigneeId}
+                    onChange={(e) => handleFilterChange('assigneeId', e.target.value)}
                     placeholder="Search assignee..."
                     className="mt-2 w-full px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     autoFocus
@@ -356,9 +356,9 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
                 Priority: {filters.priority}
               </span>
             )}
-            {filters.assignee && (
+            {filters.assigneeId && (
               <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
-                Assignee: "{filters.assignee}"
+                Assignee: "{filters.assigneeId}"
               </span>
             )}
             {filters.sprint && (
@@ -367,7 +367,7 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
               </span>
             )}
             <button
-              onClick={() => setFilters({ title: '', status: '', priority: '', assignee: '', sprint: '' })}
+              onClick={() => setFilters({ title: '', status: '', priority: '', assigneeId: '', sprint: '' })}
               className="ml-2 text-red-500 hover:text-red-700 text-xs font-medium"
             >
               Clear all

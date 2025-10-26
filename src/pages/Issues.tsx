@@ -30,8 +30,8 @@ export default function Issues() {
           <div><span className={`badge type ${i.type.toLowerCase()}`}>{i.type}</span></div>
           <div><span className={`badge priority ${i.priority}`}>{i.priority}</span></div>
           <div><span className={`badge ${i.status.toLowerCase().replace(" ", "")}`}>{i.status}</span></div>
-          <div>{i.assignee ?? "—"}</div>
-          <div>{new Date(i.updatedAt).toLocaleDateString()}</div>
+          <div>{i.assigneeId ?? "—"}</div>
+          <div>{new Date(i.updatedAt ?? i.createdAt).toLocaleDateString()}</div>
           <div className="text-gray-500" onClick={(e) => { e.stopPropagation(); ui.openIssueDetail(i.id) }}>⋮</div>
         </div>
       ))}

@@ -1,13 +1,18 @@
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
-import type { Issue, IssuePriority as Priority, IssueStatus as Status } from '@/types'
+import type { Issue, IssuePriority, IssueStatus } from '@/types'
 import Avatar from './ui/Avatar'
 import Chip from './ui/Chip'
 import { ArrowLeft, ArrowRight, Check, Trash2 } from 'lucide-react'
 import { nextStatus, prevStatus } from '../constants/status'
 
-const STATUSES: Status[] = ['Todo','In Progress','In Review','Done']
-const PRIOS: Priority[] = ['P0','P1','P2','P3','P4','P5']
+const STATUSES: IssueStatus[] = ['Todo','In Progress','In Review','Done']
+const PRIORITY_LABEL: Record<IssuePriority, string> = {
+  Low: "Low",
+  Medium: "Medium",
+  High: "High",
+  Critical: "Critical",
+}
 
 export default function IssueCard({ issue }: { issue: Issue }) {
   const update = useFCStore(s => s.updateIssue)
@@ -23,15 +28,15 @@ export default function IssueCard({ issue }: { issue: Issue }) {
   return (
     <motion.div
       layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-      className="md-card issue-card" data-prio={issue.priority} data-assignee={issue.assignee ?? ''}
+      className="md-card issue-card" data-prio={issue.priority} data-assignee={issue.assigneeId ?? ''}
     >
       <div className="card-inner">
         {/* Header */}
         <div className="flex items-center gap-2">
           <span className="font-mono text-xs text-slate-500">{issue.id}</span>
           <Chip>{issue.priority}</Chip>
-          <span className="ml-auto text-xs text-slate-400">{new Date(issue.updatedAt).toLocaleDateString()}</span>
-          <Avatar name={issue.assignee} />
+          <span className="ml-auto text-xs text-slate-400">{new Date(issue.updatedAt ?? issue.createdAt).toLocaleDateString()}</span>
+          <Avatar name={issue.assigneeId} />
         </div>
 
         {/* Title */}

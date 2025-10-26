@@ -24,9 +24,8 @@ export default function IssueCreateModal() {
   // form state
   const [title, setTitle] = useState("")
   const [type, setType] = useState<IssueType>("Task")
-  const [priority, setPriority] = useState<IssuePriority>("P2")
+  const [priority, setPriority] = useState<IssuePriority>("Medium")
   const [status, setStatus] = useState<IssueStatus>("Todo")
-  const [assignee, setAssignee] = useState("")
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [sprintId, setSprintId] = useState<string | "backlog">(active?.id ?? "backlog")
   const [description, setDescription] = useState("")
@@ -89,7 +88,6 @@ export default function IssueCreateModal() {
       type,
       priority,
       status,
-      assignee: assignee.trim() || undefined,
       assigneeId: assigneeId,
       sprintId: sprintId === "backlog" ? null : sprintId,
       description: description.trim(),

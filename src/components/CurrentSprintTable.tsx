@@ -15,7 +15,7 @@ interface FilterState {
   title: string
   status: string
   priority: string
-  assignee: string
+  assigneeId: string
 }
 
 export default function CurrentSprintTable({ issues, activeSprint }: { issues: Issue[], activeSprint: any }) {
@@ -29,7 +29,7 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
     title: '',
     status: '',
     priority: '',
-    assignee: ''
+    assigneeId: ''
   })
 
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
@@ -51,8 +51,8 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
         return false
       }
       
-      // Filtrowanie po assignee (minimum 3 znaki)
-      if (filters.assignee.length >= 3 && !(issue.assignee?.toLowerCase().includes(filters.assignee.toLowerCase()) ?? false)) {
+      // Filtrowanie po assigneeId (minimum 3 znaki)
+      if (filters.assigneeId.length >= 3 && !(issue.assigneeId?.toLowerCase().includes(filters.assigneeId.toLowerCase()) ?? false)) {
         return false
       }
       
@@ -189,17 +189,17 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
                 <div className="flex items-center gap-2">
                   <span>Assignee</span>
                   <button
-                    onClick={() => setActiveFilter(activeFilter === 'assignee' ? null : 'assignee')}
+                    onClick={() => setActiveFilter(activeFilter === 'assigneeId' ? null : 'assigneeId')}
                     className="text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     🔍
                   </button>
                 </div>
-                {activeFilter === 'assignee' && (
+                {activeFilter === 'assigneeId' && (
                   <input
                     type="text"
-                    value={filters.assignee}
-                    onChange={(e) => handleFilterChange('assignee', e.target.value)}
+                    value={filters.assigneeId}
+                    onChange={(e) => handleFilterChange('assigneeId', e.target.value)}
                     placeholder="Search assignee..."
                     className="mt-2 w-full px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                     autoFocus
@@ -270,12 +270,12 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
                   {/* Assignee */}
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                      <Avatar name={issue.assignee} />
+                      <Avatar name={issue.assigneeId} />
                       <input
                         className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={issue.assignee || ''}
+                        value={issue.assigneeId || ''}
                         placeholder="Assignee"
-                        onChange={(e) => updateIssue(issue.id, { assignee: e.target.value || undefined })}
+                        onChange={(e) => updateIssue(issue.id, { assigneeId: e.target.value || undefined })}
                       />
                     </div>
                   </td>
@@ -316,13 +316,13 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
                 Priority: {filters.priority}
               </span>
             )}
-            {filters.assignee && (
+            {filters.assigneeId && (
               <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
-                Assignee: "{filters.assignee}"
+                Assignee: "{filters.assigneeId}"
               </span>
             )}
             <button
-              onClick={() => setFilters({ title: '', status: '', priority: '', assignee: '' })}
+              onClick={() => setFilters({ title: '', status: '', priority: '', assigneeId: '' })}
               className="ml-2 text-red-500 hover:text-red-700 text-xs font-medium"
             >
               Clear all

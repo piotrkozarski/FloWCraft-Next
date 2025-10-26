@@ -19,11 +19,11 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [priority, setPriority] = useState<Priority>('P3')
   const [status, setStatus] = useState<Status>('Todo')
   const [sprintId, setSprintId] = useState<string | 'backlog'>('backlog')
-  const [assignee, setAssignee] = useState('')
+  const [assigneeId, setAssigneeId] = useState('')
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    console.log('IssueModal submit called', { title, priority, status, sprintId, assignee })
+    console.log('IssueModal submit called', { title, priority, status, sprintId, assigneeId })
     if (!title.trim()) return
     try {
       createIssue({
@@ -31,7 +31,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         description: '',
         status,
         priority,
-        assignee: assignee.trim() || undefined,
+        assigneeId: assigneeId.trim() || undefined,
         sprintId: sprintId === 'backlog' ? null : sprintId,
         createdAt: 0, // nadpisywane w store
         updatedAt: 0,
@@ -150,8 +150,8 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                   👤 Assignee
                 </label>
                 <input 
-                  value={assignee} 
-                  onChange={e=>setAssignee(e.target.value)} 
+                  value={assigneeId} 
+                  onChange={e=>setAssigneeId(e.target.value)} 
                   className="input-modern" 
                   placeholder="Team member name" 
                 />

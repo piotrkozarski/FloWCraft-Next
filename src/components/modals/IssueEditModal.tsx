@@ -25,9 +25,8 @@ export default function IssueEditModal() {
   // Form state - initialize with current issue values
   const [title, setTitle] = useState("")
   const [type, setType] = useState<IssueType>("Task")
-  const [priority, setPriority] = useState<IssuePriority>("P2")
+  const [priority, setPriority] = useState<IssuePriority>("Medium")
   const [status, setStatus] = useState<IssueStatus>("Todo")
-  const [assignee, setAssignee] = useState("")
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [sprintId, setSprintId] = useState<string | "backlog">("backlog")
   const [description, setDescription] = useState("")
@@ -48,7 +47,6 @@ export default function IssueEditModal() {
       setType(issue.type)
       setPriority(issue.priority)
       setStatus(issue.status)
-      setAssignee(issue.assignee || "")
       setAssigneeId(issue.assigneeId || null)
       setSprintId(issue.sprintId || "backlog")
       setDescription(issue.description || "")
@@ -114,7 +112,6 @@ export default function IssueEditModal() {
       type,
       priority,
       status,
-      assignee: assignee.trim() || undefined,
       assigneeId: assigneeId,
       sprintId: sprintId === "backlog" ? null : sprintId,
       description: description.trim(),

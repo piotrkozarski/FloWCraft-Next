@@ -30,7 +30,7 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
   const updateStatus = useFCStore(s => s.updateIssueStatus)
   const [filters, setFilters] = useState({
     title: '',
-    assignee: '',
+    assigneeId: '',
     priority: ''
   })
 
@@ -38,7 +38,7 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
     if (filters.title && !issue.title.toLowerCase().includes(filters.title.toLowerCase())) {
       return false
     }
-    if (filters.assignee && !(issue.assignee?.toLowerCase().includes(filters.assignee.toLowerCase()) ?? false)) {
+    if (filters.assigneeId && !(issue.assigneeId?.toLowerCase().includes(filters.assigneeId.toLowerCase()) ?? false)) {
       return false
     }
     if (filters.priority && issue.priority !== filters.priority) {
@@ -83,8 +83,8 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
             <input
               type="text"
               placeholder="Filter assignee..."
-              value={filters.assignee}
-              onChange={(e) => setFilters(prev => ({ ...prev, assignee: e.target.value }))}
+              value={filters.assigneeId}
+              onChange={(e) => setFilters(prev => ({ ...prev, assigneeId: e.target.value }))}
               className="border border-[#E6E0E9] rounded-full px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-[#D0BCFF]"
             />
             <select
@@ -191,9 +191,9 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
 
                                 {/* Assignee */}
                                 <div className="flex items-center gap-2 pt-2 border-t border-[#E6E0E9]">
-                                  <Avatar name={issue.assignee} />
+                                  <Avatar name={issue.assigneeId} />
                                   <span className="text-xs font-medium text-slate-600">
-                                    {issue.assignee || 'Unassigned'}
+                                    {issue.assigneeId || 'Unassigned'}
                                   </span>
                                 </div>
                               </motion.div>

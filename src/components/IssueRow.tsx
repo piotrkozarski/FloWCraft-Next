@@ -44,9 +44,9 @@ export default function IssueRow({ issue }: { issue: Issue }) {
       </select>
       <input
         className="border rounded-md px-2 py-1 w-36"
-        value={issue.assignee ?? ''}
+        value={issue.assigneeId ?? ''}
         placeholder="assignee"
-        onChange={(e)=>updateIssue(issue.id, { assignee: e.target.value || undefined })}
+        onChange={(e)=>updateIssue(issue.id, { assigneeId: e.target.value || undefined })}
       />
       <button onClick={()=>deleteIssue(issue.id)} className="ml-auto px-3 py-1.5 rounded-md bg-red-600 text-white">Delete</button>
     </div>
