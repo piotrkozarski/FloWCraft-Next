@@ -6,9 +6,9 @@ import { supabase } from "../lib/supabase"
 export default function Register() {
   const { signUpWithPassword, loading, error } = useAuth()
   const [email, setEmail] = useState("")
-  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
+  const [username, setUsername] = useState("")
   const [ok, setOk] = useState(false)
   const [localErr, setLocalErr] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -28,7 +28,6 @@ export default function Register() {
 
     await signUpWithPassword(email, password)
     if (!error) {
-      // spróbuj zapisać username do profilu jeśli sesja powstała (po confirm będzie dociśnięte ensureProfile)
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         await supabase.from("profiles").upsert({ id: user.id, email: user.email, username })
@@ -44,16 +43,18 @@ export default function Register() {
         <h1 className="section-title text-2xl mb-4">Create account</h1>
         <form onSubmit={onSubmit} className="space-y-3">
           <div>
+            <label className="block text-sm mb-1 text-[var(--muted)]">Username</label>
+            <input value={username} onChange={e=>setUsername(e.target.value)}
+              className="w-full date-input rounded-md px-3 py-2 text-sm" minLength={3} required />
+          </div>
+          <div>
             <label className="block text-sm mb-1 text-[var(--muted)]">Email</label>
             <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
               className="w-full date-input rounded-md px-3 py-2 text-sm" required />
           </div>
-          <div>
-            <label className="block text-sm mb-1 text-[var(--muted)]">Username</label>
-            <input value={username} onChange={e=>setUsername(e.target.value)}
-              minLength={3} required
-              className="w-full date-input rounded-md px-3 py-2 text-sm" placeholder="np. thrall"/>
-          </div>
+          {!emailValid && email.length > 0 && (
+            <div className="text-red-400 text-xs">Invalid email address.</div>
+          )}
           <div>
             <label className="block text-sm mb-1 text-[var(--muted)]">Password (min. 8 chars)</label>
             <input type="password" value={password} onChange={e=>setPassword(e.target.value)}
@@ -65,13 +66,10 @@ export default function Register() {
               className="w-full date-input rounded-md px-3 py-2 text-sm" required />
           </div>
 
-          {!emailValid && email.length > 0 && (
-            <div className="text-red-400 text-xs">Invalid email address.</div>
-          )}
-          {!pwValid && password.length > 0 && (
+          {(!pwValid && password.length > 0) && (
             <div className="text-red-400 text-xs">Password must be at least 8 characters.</div>
           )}
-          {!match && confirm.length > 0 && (
+          {(!match && confirm.length > 0) && (
             <div className="text-red-400 text-xs">Passwords do not match.</div>
           )}
           {localErr && <div className="text-red-400 text-sm">{localErr}</div>}

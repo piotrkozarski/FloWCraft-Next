@@ -1,9 +1,8 @@
 import { useEffect } from "react"
 
-// Auth callback page for email confirmation
 export default function AuthCallback() {
   useEffect(() => {
-    // supabase-js (detectSessionInUrl: true) przetworzy hash; dajmy mu chwilę i wróćmy do app
+    // supabase-js (detectSessionInUrl: true) ustawi sesję z hash-a.
     const t = setTimeout(() => { window.location.replace("/") }, 400)
     return () => clearTimeout(t)
   }, [])
