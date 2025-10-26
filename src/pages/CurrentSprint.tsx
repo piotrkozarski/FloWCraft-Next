@@ -11,6 +11,13 @@ export default function CurrentSprint() {
 
   const inSprint = useMemo(() => issues.filter(i => i.sprintId === sprint?.id), [issues, sprint])
   const grouped = COLUMNS.map(col => ({ status: col, items: inSprint.filter(i => i.status === col) }))
+  
+  // Calculate sprint progress
+  const sprintProgress = useMemo(() => {
+    if (!inSprint.length) return 0
+    const doneCount = inSprint.filter(i => i.status === 'Done').length
+    return Math.round((doneCount / inSprint.length) * 100)
+  }, [inSprint])
 
   if (!sprint) return <div className="text-gray-400">No active sprint.</div>
 
@@ -32,6 +39,27 @@ export default function CurrentSprint() {
             End Sprint
           </button>
         )}
+      </div>
+
+      {/* Sprint Progress Bar */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-medium">Sprint Progress</h3>
+          <div className="text-sm text-[var(--muted)]">
+            {inSprint.filter(i => i.status === 'Done').length} / {inSprint.length} completed
+          </div>
+        </div>
+        <div className="w-full bg-[var(--panel)] rounded-full h-3 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300 ease-out"
+            style={{ width: `${sprintProgress}%` }}
+          />
+        </div>
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-sm text-[var(--muted)]">0%</span>
+          <span className="text-lg font-semibold text-[var(--accent)]">{sprintProgress}%</span>
+          <span className="text-sm text-[var(--muted)]">100%</span>
+        </div>
       </div>
 
       <div className="board">
