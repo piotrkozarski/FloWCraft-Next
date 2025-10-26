@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { useAuth } from "../auth/AuthContext"
+import { useAuth } from "../store/auth"
 import { Shield, Sword } from "lucide-react"
 
 export default function Login() {
-  const { signInWithEmail, user, loading } = useAuth()
+  const { signInWithPassword, user, loading, error } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -19,13 +18,8 @@ export default function Login() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError(null)
-    const { error } = await signInWithEmail(email, password)
-    if (error) {
-      setError(error)
-    }
-    setIsLoading(false)
+    setLocalError(null)
+    await signInWithPassword(email, password)
   }
 
   return (
@@ -47,10 +41,10 @@ export default function Login() {
             <input type="password" value={password} onChange={e=>setPassword(e.target.value)}
               className="w-full date-input rounded-md px-3 py-2 text-sm" required />
           </div>
-          {error && <div className="text-red-400 text-sm">{error}</div>}
-          <button disabled={isLoading}
+          {(error || localError) && <div className="text-red-400 text-sm">{error || localError}</div>}
+          <button disabled={loading}
             className="w-full bg-[var(--primary)] text-white rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)] disabled:opacity-50">
-            <Sword className="w-4 h-4" /> {isLoading ? "Signing in…" : "Sign in"}
+            <Sword className="w-4 h-4" /> {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
 
