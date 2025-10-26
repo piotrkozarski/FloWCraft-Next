@@ -107,13 +107,13 @@ export const useFCStore = create<FCState>((set, get) => {
   const activeId = sprints.find(s => s.status === 'Active')?.id ?? null;
 
   const issues: Issue[] = [
-    mk('Fix critical auth bug', 'P0', 'In Progress', activeId, { assigneeId: 'user-1' }),
+    mk('Fix critical auth bug', 'P0', 'In Progress', activeId),
     mk('Payment webhook retries', 'P0', 'Todo', activeId),
-    mk('Kanban DnD polish', 'P1', 'In Review', activeId, { assigneeId: 'user-2' }),
+    mk('Kanban DnD polish', 'P1', 'In Review', activeId),
     mk('Bulk assign modal', 'P1', 'Todo', activeId),
     mk('Sprint summary dialog', 'P1', 'Todo', activeId),
 
-    mk('Priority badges', 'P2', 'In Progress', activeId, { assigneeId: 'user-3' }),
+    mk('Priority badges', 'P2', 'In Progress', activeId),
     mk('Issue edit modal', 'P2', 'Done', activeId),
     mk('Filter by assignee', 'P2', 'Todo', null),
     mk('Sort by priority', 'P2', 'In Review', activeId),
