@@ -55,8 +55,6 @@ export default function App() {
           </div>
           <nav>
             <NavLink to="/" end><ListTodo className="w-4 h-4" /> Issues</NavLink>
-            <NavLink to="/current"><PlayCircle className="w-4 h-4" /> Current Sprint</NavLink>
-            <NavLink to="/sprints"><LayoutDashboard className="w-4 h-4" /> Sprints</NavLink>
             <NavLink to="/my-issues" className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <UserCircle className="w-4 h-4" />
@@ -68,6 +66,8 @@ export default function App() {
                 </span>
               )}
             </NavLink>
+            <NavLink to="/current"><PlayCircle className="w-4 h-4" /> Current Sprint</NavLink>
+            <NavLink to="/sprints"><LayoutDashboard className="w-4 h-4" /> Sprints</NavLink>
             <NavLink to="/reports"><BarChart2 className="w-4 h-4" /> Reports</NavLink>
           </nav>
           <div className="px-3 py-2 mt-4 space-y-1">
