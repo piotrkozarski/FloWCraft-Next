@@ -42,8 +42,8 @@ export default function IssueCreateModal() {
   // reset na otwarciu
   useEffect(() => {
     if (open) {
-      setTitle(""); setType("Task"); setPriority("P2"); setStatus("Todo")
-      setAssignee(""); setAssigneeId(null); setSprintId(active?.id ?? "backlog"); setDescription("")
+      setTitle(""); setType("Task"); setPriority("Medium"); setStatus("Todo")
+      setAssigneeId(null); setSprintId(active?.id ?? "backlog"); setDescription("")
       setParentQuery(""); setParent(null); setShowParentOptions(false)
     }
   }, [open, active?.id])
@@ -125,7 +125,7 @@ export default function IssueCreateModal() {
           <div>
             <label className="block text-sm mb-1 text-[var(--muted)]">Priority</label>
             <select className="w-full rounded-md bg-[var(--surface)] border border-[var(--border)] px-2 py-2 text-sm text-[var(--text)]"
-                    value={priority} onChange={e=>setPriority(e.target.value as Priority)}>
+                    value={priority} onChange={e=>setPriority(e.target.value as IssuePriority)}>
               {PRIORITIES.map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
@@ -133,7 +133,7 @@ export default function IssueCreateModal() {
           <div>
             <label className="block text-sm mb-1 text-[var(--muted)]">Status</label>
             <select className="w-full rounded-md bg-[var(--surface)] border border-[var(--border)] px-2 py-2 text-sm text-[var(--text)]"
-                    value={status} onChange={e=>setStatus(e.target.value as Status)}>
+                    value={status} onChange={e=>setStatus(e.target.value as IssueStatus)}>
               {STATUSES.map(s => <option key={s}>{s}</option>)}
             </select>
           </div>

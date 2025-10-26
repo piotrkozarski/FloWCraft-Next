@@ -10,8 +10,8 @@ export default function IssueForm() {
   const createIssue = useFCStore(s => s.createIssue)
   const sprints = useFCStore(s => s.sprints)
   const [title, setTitle] = useState('')
-  const [priority, setPriority] = useState<Priority>('P3')
-  const [status, setStatus] = useState<Status>('Todo')
+  const [priority, setPriority] = useState<IssuePriority>('Medium')
+  const [status, setStatus] = useState<IssueStatus>('Todo')
   const [sprintId, setSprintId] = useState<string | 'backlog'>('backlog')
   const [assigneeId, setAssigneeId] = useState('')
 
@@ -32,8 +32,8 @@ export default function IssueForm() {
         id: ''        // nadpisywane w store
       } as any)
       setTitle('')
-      setAssignee('')
-      setPriority('P3')
+      setAssigneeId('')
+      setPriority('Medium')
       setStatus('Todo')
       setSprintId('backlog')
       console.log('Issue created successfully')
@@ -60,7 +60,7 @@ export default function IssueForm() {
             <label className="label">Priority</label>
             <select 
               value={priority} 
-              onChange={e=>setPriority(e.target.value as Priority)} 
+              onChange={e=>setPriority(e.target.value as IssuePriority)} 
               className="select w-full"
             >
               {priorities.map(p => <option key={p}>{p}</option>)}
@@ -71,7 +71,7 @@ export default function IssueForm() {
             <label className="label">Status</label>
             <select 
               value={status} 
-              onChange={e=>setStatus(e.target.value as Status)} 
+              onChange={e=>setStatus(e.target.value as IssueStatus)} 
               className="select w-full"
             >
               {statuses.map(s => <option key={s}>{s}</option>)}

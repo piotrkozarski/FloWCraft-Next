@@ -252,7 +252,7 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
                     <select
                       className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={issue.status}
-                      onChange={(e) => updateStatus(issue.id, e.target.value as Status)}
+                      onChange={(e) => updateStatus(issue.id, e.target.value as IssueStatus)}
                     >
                       {statuses.map(status => (
                         <option key={status} value={status}>{status}</option>
@@ -270,7 +270,7 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
                   {/* Assignee */}
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                      <Avatar name={issue.assigneeId} />
+                      <Avatar name={issue.assigneeId || ''} />
                       <input
                         className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={issue.assigneeId || ''}

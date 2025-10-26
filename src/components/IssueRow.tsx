@@ -23,14 +23,14 @@ export default function IssueRow({ issue }: { issue: Issue }) {
       <select
         className="border rounded-md px-2 py-1"
         value={issue.priority}
-        onChange={(e)=>updateIssue(issue.id, { priority: e.target.value as Priority })}
+        onChange={(e)=>updateIssue(issue.id, { priority: e.target.value as IssuePriority })}
       >
         {priorities.map(p => <option key={p}>{p}</option>)}
       </select>
       <select
         className="border rounded-md px-2 py-1"
         value={issue.status}
-        onChange={(e)=>updateStatus(issue.id, e.target.value as Status)}
+        onChange={(e)=>updateStatus(issue.id, e.target.value as IssueStatus)}
       >
         {statuses.map(s => <option key={s}>{s}</option>)}
       </select>

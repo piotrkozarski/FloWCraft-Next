@@ -176,20 +176,20 @@ export const useFCStore = create<FCState>((set, get) => {
       const allowed: IssueStatus[] = ['Todo','In Progress','In Review','Done'];
       if (!allowed.includes(status)) throw new Error('Invalid status');
       set(st => ({
-        issues: st.issues.map(i => i.id === id ? { ...i, status, updatedAt: now() } : i)
+        issues: st.issues.map(i => i.id === id ? { ...i, status, updatedAt: new Date().toISOString() } : i)
       }));
     },
 
     assignIssueToSprint(id, sprintId) {
       set(st => ({
-        issues: st.issues.map(i => i.id === id ? { ...i, sprintId, updatedAt: now() } : i)
+        issues: st.issues.map(i => i.id === id ? { ...i, sprintId, updatedAt: new Date().toISOString() } : i)
       }));
     },
 
     bulkAssignToSprint(ids, sprintId) {
       const setIds = new Set(ids);
       set(st => ({
-        issues: st.issues.map(i => setIds.has(i.id) ? { ...i, sprintId, updatedAt: now() } : i)
+        issues: st.issues.map(i => setIds.has(i.id) ? { ...i, sprintId, updatedAt: new Date().toISOString() } : i)
       }));
     },
 
@@ -264,7 +264,7 @@ export const useFCStore = create<FCState>((set, get) => {
       set(state => ({
         sprints: state.sprints.filter(s => s.id !== id),
         issues: state.issues.map(i =>
-          i.sprintId === id ? { ...i, sprintId: null, updatedAt: now() } : i
+          i.sprintId === id ? { ...i, sprintId: null, updatedAt: new Date().toISOString() } : i
         )
       }));
     },

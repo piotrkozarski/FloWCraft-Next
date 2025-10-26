@@ -36,7 +36,7 @@ export default function IssueCard({ issue }: { issue: Issue }) {
           <span className="font-mono text-xs text-slate-500">{issue.id}</span>
           <Chip>{issue.priority}</Chip>
           <span className="ml-auto text-xs text-slate-400">{new Date(issue.updatedAt ?? issue.createdAt).toLocaleDateString()}</span>
-          <Avatar name={issue.assigneeId} />
+          <Avatar name={issue.assigneeId || ''} />
         </div>
 
         {/* Title */}
@@ -50,12 +50,12 @@ export default function IssueCard({ issue }: { issue: Issue }) {
         {/* Meta + quick actions */}
         <div className="issue-meta--compact mt-2 items-center">
           <select className="select w-full" value={issue.priority}
-                  onChange={(e) => update(issue.id, { priority: e.target.value as Priority })} aria-label="Priority">
-            {PRIOS.map(p => <option key={p}>{p}</option>)}
+                  onChange={(e) => update(issue.id, { priority: e.target.value as IssuePriority })} aria-label="Priority">
+            {Object.keys(PRIORITY_LABEL).map(p => <option key={p}>{p}</option>)}
           </select>
 
           <select className="select w-full" value={issue.status}
-                  onChange={(e) => updateStatus(issue.id, e.target.value as Status)} aria-label="Status">
+                  onChange={(e) => updateStatus(issue.id, e.target.value as IssueStatus)} aria-label="Status">
             {STATUSES.map(s => <option key={s}>{s}</option>)}
           </select>
 

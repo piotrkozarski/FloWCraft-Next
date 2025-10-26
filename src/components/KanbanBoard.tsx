@@ -50,11 +50,11 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
   function onDragEnd(result: any) {
     if (!result.destination) return
     const issueId = result.draggableId
-    const toStatus = result.destination.droppableId as Status
+    const toStatus = result.destination.droppableId as IssueStatus
     updateStatus(issueId, toStatus)
   }
 
-  const getIssuesByStatus = (status: Status) => {
+  const getIssuesByStatus = (status: IssueStatus) => {
     return filteredIssues.filter(issue => issue.status === status)
   }
 
@@ -191,7 +191,7 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
 
                                 {/* Assignee */}
                                 <div className="flex items-center gap-2 pt-2 border-t border-[#E6E0E9]">
-                                  <Avatar name={issue.assigneeId} />
+                                  <Avatar name={issue.assigneeId || ''} />
                                   <span className="text-xs font-medium text-slate-600">
                                     {issue.assigneeId || 'Unassigned'}
                                   </span>
