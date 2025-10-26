@@ -1,9 +1,10 @@
 import { NavLink, Outlet } from "react-router-dom"
 import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, BarChart2, PlusCircle, Sword, Shield, LogOut } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useUI } from "./store/ui"
 import { useTheme } from "./store/theme"
 import { useAuth } from "./auth/AuthContext"
+import { useFCStore } from "./store"
 import { AuthModal } from "./auth/AuthModal"
 import IssueCreateModal from "./components/modals/IssueCreateModal"
 import SprintCreateModal from "./components/modals/SprintCreateModal"
@@ -15,7 +16,15 @@ export default function App() {
   const openSprint = useUI(s => s.openSprint)
   const { mode, toggle, setMode } = useTheme()
   const { user, signOut } = useAuth()
+  const { loadData, loading, error } = useFCStore()
   const [authOpen, setAuthOpen] = useState(false)
+
+  // Load data when user is authenticated
+  useEffect(() => {
+    if (user) {
+      loadData().catch(console.error)
+    }
+  }, [user, loadData])
 
   const handleNewIssue = () => {
     if (!user) {
@@ -132,6 +141,16 @@ export default function App() {
           </div>
         </div>
         <div className="page-content">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-md text-red-700">
+              Error: {error}
+            </div>
+          )}
+          {loading && (
+            <div className="mb-4 p-3 bg-blue-100 border border-blue-300 rounded-md text-blue-700">
+              Loading...
+            </div>
+          )}
           <Outlet />
         </div>
       </div>
