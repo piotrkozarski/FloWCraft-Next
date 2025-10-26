@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
 import type { Issue, IssueStatus } from '@/types'
 import Badge from './ui/Badge'
 import Avatar from './ui/Avatar'
+import { fetchProfiles } from '../services/users'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
@@ -33,6 +34,19 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
     assigneeId: '',
     priority: ''
   })
+  
+  const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles().then(setProfiles)
+  }, [])
+
+  // Helper to map assignee ID to name
+  const mapName = (id?: string | null) => {
+    const p = profiles.find(x => x.id === id)
+    return p?.username || p?.email || "Unassigned"
+  }
 
   const filteredIssues = issues.filter(issue => {
     if (filters.title && !issue.title.toLowerCase().includes(filters.title.toLowerCase())) {
@@ -191,9 +205,9 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
 
                                 {/* Assignee */}
                                 <div className="flex items-center gap-2 pt-2 border-t border-[#E6E0E9]">
-                                  <Avatar name={issue.assigneeId || ''} />
+                                  <Avatar name={mapName(issue.assigneeId)} />
                                   <span className="text-xs font-medium text-slate-600">
-                                    {issue.assigneeId || 'Unassigned'}
+                                    {mapName(issue.assigneeId)}
                                   </span>
                                 </div>
                               </motion.div>

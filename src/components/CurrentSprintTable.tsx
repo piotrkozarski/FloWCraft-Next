@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
 import type { IssueStatus } from '@/types'
 import type { Issue, IssuePriority } from '@/types'
 import Badge from './ui/Badge'
 import Avatar from './ui/Avatar'
+import { fetchProfiles } from '../services/users'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 const priorities: IssuePriority[] = ['Low','Medium','High','Critical']
@@ -22,6 +23,19 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
   const updateIssue = useFCStore(s => s.updateIssue)
   const updateStatus = useFCStore(s => s.updateIssueStatus)
   const deleteIssue = useFCStore(s => s.deleteIssue)
+  
+  const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles().then(setProfiles)
+  }, [])
+
+  // Helper to map assignee ID to name
+  const mapName = (id?: string | null) => {
+    const p = profiles.find(x => x.id === id)
+    return p?.username || p?.email || "Unassigned"
+  }
   // const sprints = useFCStore(s => s.sprints) // Removed unused variable
   // const assign = useFCStore(s => s.assignIssueToSprint) // Removed unused variable
 
@@ -270,7 +284,7 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
                   {/* Assignee */}
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                      <Avatar name={issue.assigneeId || ''} />
+                      <Avatar name={mapName(issue.assigneeId)} />
                       <input
                         className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={issue.assigneeId || ''}

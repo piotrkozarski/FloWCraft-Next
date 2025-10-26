@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
 import type { Issue, IssuePriority, IssueStatus } from '@/types'
@@ -5,6 +6,7 @@ import Avatar from './ui/Avatar'
 import Chip from './ui/Chip'
 import { ArrowLeft, ArrowRight, Check, Trash2 } from 'lucide-react'
 import { nextStatus, prevStatus } from '../constants/status'
+import { fetchProfiles } from '../services/users'
 
 const STATUSES: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 const PRIORITY_LABEL: Record<IssuePriority, string> = {
@@ -20,6 +22,19 @@ export default function IssueCard({ issue }: { issue: Issue }) {
   const del = useFCStore(s => s.deleteIssue)
   const sprints = useFCStore(s => s.sprints)
   const assign = useFCStore(s => s.assignIssueToSprint)
+  
+  const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles().then(setProfiles)
+  }, [])
+
+  // Helper to map assignee ID to name
+  const mapName = (id?: string | null) => {
+    const p = profiles.find(x => x.id === id)
+    return p?.username || p?.email || "Unassigned"
+  }
 
   const moveLeft  = () => updateStatus(issue.id, prevStatus(issue.status))
   const moveRight = () => updateStatus(issue.id, nextStatus(issue.status))
@@ -36,7 +51,7 @@ export default function IssueCard({ issue }: { issue: Issue }) {
           <span className="font-mono text-xs text-slate-500">{issue.id}</span>
           <Chip>{issue.priority}</Chip>
           <span className="ml-auto text-xs text-slate-400">{new Date(issue.updatedAt ?? issue.createdAt).toLocaleDateString()}</span>
-          <Avatar name={issue.assigneeId || ''} />
+          <Avatar name={mapName(issue.assigneeId)} />
         </div>
 
         {/* Title */}
