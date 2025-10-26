@@ -1,0 +1,1 @@
+export default function Chip({children}:{children:React.ReactNode}){ return <span className="md-chip">{children}</span> }
