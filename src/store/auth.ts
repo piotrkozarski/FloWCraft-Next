@@ -2,11 +2,15 @@ import { create } from "zustand"
 import { supabase } from "../lib/supabase"
 
 async function ensureProfile() {
-  const authUser = (await supabase.auth.getUser()).data.user
-  if (!authUser) return
-  const { id, email } = authUser
-  // jeśli brak rekordu, utwórz pusty z samym email; username uzupełnimy przy rejestracji
-  await supabase.from("profiles").upsert({ id, email }, { onConflict: "id" })
+  try {
+    const authUser = (await supabase.auth.getUser()).data.user
+    if (!authUser) return
+    const { id, email } = authUser
+    // jeśli brak rekordu, utwórz pusty z samym email; username uzupełnimy przy rejestracji
+    await supabase.from("profiles").upsert({ id, email }, { onConflict: "id" })
+  } catch (error) {
+    console.error('Error ensuring profile:', error)
+  }
 }
 
 type User = {
@@ -47,7 +51,9 @@ export const useAuth = create<AuthState>((set, get) => ({
       const u = sess?.user
       set({ user: u ? { id: u.id, email: u.email ?? null, avatar_url: u.user_metadata?.avatar_url } : null })
       // Ensure profile exists after auth state change
-      ensureProfile()
+      ensureProfile().catch(error => {
+        console.error('Error in auth state change ensureProfile:', error)
+      })
     })
   },
 
@@ -59,11 +65,22 @@ export const useAuth = create<AuthState>((set, get) => ({
 
   signUpWithPassword: async (email, password) => {
     set({ loading: true, error: null })
-    const redirectTo = `${window.location.origin}/auth/callback`
-    const { error } = await supabase.auth.signUp(
-      { email, password, options: { emailRedirectTo: redirectTo } }
-    )
-    set({ loading: false, error: error?.message ?? null })
+    console.log('Auth store: Starting signUpWithPassword...')
+    
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback`
+      console.log('Auth store: Redirect URL:', redirectTo)
+      
+      const { data, error } = await supabase.auth.signUp(
+        { email, password, options: { emailRedirectTo: redirectTo } }
+      )
+      
+      console.log('Auth store: SignUp result:', { data, error })
+      set({ loading: false, error: error?.message ?? null })
+    } catch (err) {
+      console.error('Auth store: SignUp error:', err)
+      set({ loading: false, error: 'Registration failed. Please try again.' })
+    }
   },
 
 

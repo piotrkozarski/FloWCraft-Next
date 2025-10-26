@@ -26,14 +26,33 @@ export default function Register() {
     if (!match) { setLocalErr("Passwords do not match."); return }
     if (username.trim().length < 3) { setLocalErr("Username must be at least 3 characters."); return }
 
-    await signUpWithPassword(email, password)
-    if (!error) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await supabase.from("profiles").upsert({ id: user.id, email: user.email, username })
+    console.log('Starting registration process...')
+
+    try {
+      const result = await signUpWithPassword(email, password)
+      
+      // Check if there's an error from the auth store
+      if (error) {
+        setLocalErr(error)
+        return
       }
+      
+      // Try to get the user and create profile
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await supabase.from("profiles").upsert({ id: user.id, email: user.email, username })
+        }
+      } catch (profileError) {
+        console.error('Profile creation error:', profileError)
+        // Don't fail the registration if profile creation fails
+      }
+      
       setOk(true)
       setTimeout(() => navigate("/login", { replace: true }), 1200)
+    } catch (err) {
+      console.error('Registration error:', err)
+      setLocalErr("Registration failed. Please try again.")
     }
   }
 
