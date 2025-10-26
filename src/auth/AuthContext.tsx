@@ -7,7 +7,7 @@ type AuthCtx = {
   session: Session | null;
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
-  signUpWithEmail: (email: string, password: string) => Promise<{ error?: string; user?: User }>;
+  signUpWithEmail: (email: string, password: string) => Promise<{ error?: string; user?: User | null }>;
   signOut: () => Promise<void>;
 };
 
