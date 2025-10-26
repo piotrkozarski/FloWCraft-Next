@@ -8,7 +8,7 @@ import Avatar from './ui/Avatar'
 import { fetchProfiles } from '../services/users'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
-const priorities: IssuePriority[] = ['Low','Medium','High','Critical']
+const priorities: IssuePriority[] = ['P0','P1','P2','P3','P4','P5']
 
 // Removed unused functions: getStatusIcon, getStatusColor
 

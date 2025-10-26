@@ -3,7 +3,7 @@ import { useFCStore } from '../store'
 import type { IssueStatus } from '@/types'
 import type { IssuePriority } from '@/types'
 
-const priorities: IssuePriority[] = ['Low','Medium','High','Critical']
+const priorities: IssuePriority[] = ['P0','P1','P2','P3','P4','P5']
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
 interface IssueModalProps {
@@ -16,7 +16,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const createIssue = useFCStore(s => s.createIssue)
   const sprints = useFCStore(s => s.sprints)
   const [title, setTitle] = useState('')
-  const [priority, setPriority] = useState<IssuePriority>('Medium')
+  const [priority, setPriority] = useState<IssuePriority>('P3')
   const [status, setStatus] = useState<IssueStatus>('Todo')
   const [sprintId, setSprintId] = useState<string | 'backlog'>('backlog')
   const [assigneeId, setAssigneeId] = useState('')
@@ -39,7 +39,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       } as any)
       setTitle('')
       setAssigneeId('')
-      setPriority('Medium')
+      setPriority('P3')
       setStatus('Todo')
       setSprintId('backlog')
       onClose()

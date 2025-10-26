@@ -9,12 +9,7 @@ import { nextStatus, prevStatus } from '../constants/status'
 import { fetchProfiles } from '../services/users'
 
 const STATUSES: IssueStatus[] = ['Todo','In Progress','In Review','Done']
-const PRIORITY_LABEL: Record<IssuePriority, string> = {
-  Low: "Low",
-  Medium: "Medium",
-  High: "High",
-  Critical: "Critical",
-}
+const PRIORITIES: IssuePriority[] = ['P0','P1','P2','P3','P4','P5']
 
 export default function IssueCard({ issue }: { issue: Issue }) {
   const update = useFCStore(s => s.updateIssue)
@@ -66,7 +61,7 @@ export default function IssueCard({ issue }: { issue: Issue }) {
         <div className="issue-meta--compact mt-2 items-center">
           <select className="select w-full" value={issue.priority}
                   onChange={(e) => update(issue.id, { priority: e.target.value as IssuePriority })} aria-label="Priority">
-            {Object.keys(PRIORITY_LABEL).map(p => <option key={p}>{p}</option>)}
+            {PRIORITIES.map(p => <option key={p}>{p}</option>)}
           </select>
 
           <select className="select w-full" value={issue.status}

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Issue, Sprint, IssueStatus, IssuePriority, SprintStatus, IssueType, UserRef } from '@/types';
-import { mapLegacyPriority, toIsoString } from '@/utils/domain';
+import { toIsoString } from '@/utils/domain';
 import { supabase } from './lib/supabase';
 
 export type SprintPatch = Partial<Pick<Sprint, "name"|"startDate"|"endDate"|"status">>
@@ -93,7 +93,7 @@ export const useFCStore = create<FCState>((set, get) => {
       title,
       description: extra?.description ?? '',
       status,
-      priority: mapLegacyPriority(priority),  // CONVERT legacy priority
+      priority,  // Use P0-P5 directly
       assigneeId: extra?.assigneeId,          // ONLY assigneeId, no assignee
       sprintId,
       createdAt: toIsoString(base),           // CONVERT to string

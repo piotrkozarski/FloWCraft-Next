@@ -8,7 +8,7 @@ import Select from "../ui/Select"
 import type { Option } from "../ui/Select"
 import { fetchProfiles } from "../../services/users"
 
-const PRIORITIES: IssuePriority[] = ["Low","Medium","High","Critical"]
+const PRIORITIES: IssuePriority[] = ["P0","P1","P2","P3","P4","P5"]
 const STATUSES: IssueStatus[] = ["Todo","In Progress","In Review","Done"]
 const TYPES: IssueType[] = ["Bug","Task","Feature","Story"]
 
@@ -24,7 +24,7 @@ export default function IssueCreateModal() {
   // form state
   const [title, setTitle] = useState("")
   const [type, setType] = useState<IssueType>("Task")
-  const [priority, setPriority] = useState<IssuePriority>("Medium")
+  const [priority, setPriority] = useState<IssuePriority>("P3")
   const [status, setStatus] = useState<IssueStatus>("Todo")
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [sprintId, setSprintId] = useState<string | "backlog">(active?.id ?? "backlog")
@@ -42,7 +42,7 @@ export default function IssueCreateModal() {
   // reset na otwarciu
   useEffect(() => {
     if (open) {
-      setTitle(""); setType("Task"); setPriority("Medium"); setStatus("Todo")
+      setTitle(""); setType("Task"); setPriority("P3"); setStatus("Todo")
       setAssigneeId(null); setSprintId(active?.id ?? "backlog"); setDescription("")
       setParentQuery(""); setParent(null); setShowParentOptions(false)
     }

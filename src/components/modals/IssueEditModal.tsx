@@ -10,7 +10,7 @@ import type { Option } from "../ui/Select"
 import { fetchProfiles } from "../../services/users"
 
 const TYPES: IssueType[] = ["Bug","Task","Feature","Story"]
-const PRIORITIES: IssuePriority[] = ["Low","Medium","High","Critical"]
+const PRIORITIES: IssuePriority[] = ["P0","P1","P2","P3","P4","P5"]
 const STATUSES: IssueStatus[] = ["Todo","In Progress","In Review","Done"]
 
 export default function IssueEditModal() {
@@ -25,7 +25,7 @@ export default function IssueEditModal() {
   // Form state - initialize with current issue values
   const [title, setTitle] = useState("")
   const [type, setType] = useState<IssueType>("Task")
-  const [priority, setPriority] = useState<IssuePriority>("Medium")
+  const [priority, setPriority] = useState<IssuePriority>("P3")
   const [status, setStatus] = useState<IssueStatus>("Todo")
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [sprintId, setSprintId] = useState<string | "backlog">("backlog")

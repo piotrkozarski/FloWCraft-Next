@@ -1,7 +1,7 @@
 // src/types.ts
 
 export type IssueStatus   = "Todo" | "In Progress" | "In Review" | "Done"
-export type IssuePriority = "Low" | "Medium" | "High" | "Critical"
+export type IssuePriority = "P0" | "P1" | "P2" | "P3" | "P4" | "P5"
 export type IssueType     = "Bug" | "Task" | "Feature" | "Story"
 export type SprintStatus  = "Planned" | "Active" | "Completed"
 
