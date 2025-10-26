@@ -1,4 +1,5 @@
 export type Priority = 'P0' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5'
+export type { Issue } from '../types'
 
 export const PRIORITY_ORDER: Priority[] = ['P0','P1','P2','P3','P4','P5']
 

@@ -18,15 +18,7 @@ const getStatusIcon = (status: Status) => {
   return icons[status]
 }
 
-const getStatusColor = (status: Status) => {
-  const colors = {
-    'Todo': 'status-todo',
-    'In Progress': 'status-in-progress',
-    'In Review': 'status-in-review',
-    'Done': 'status-done'
-  }
-  return colors[status]
-}
+// Removed unused function: getStatusColor
 
 interface KanbanBoardProps {
   issues: Issue[]
@@ -172,6 +164,8 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
                                 className={`rounded-lg p-4 cursor-move bg-white shadow-sm border border-[#E6E0E9] ${
                                   snapshot.isDragging ? 'shadow-lg rotate-1 scale-105' : ''
                                 } transition-all duration-200`}
+                                // Remove conflicting drag handlers
+                                onDragStart={undefined}
                               >
                                 {/* Issue Header */}
                                 <div className="flex items-center justify-between mb-3">

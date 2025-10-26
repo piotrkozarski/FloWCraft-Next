@@ -1,4 +1,4 @@
-import { useFCStore } from '../store'
+// import { useFCStore } from '../store' // Removed unused import
 import type { Sprint } from '../store'
 
 interface SprintSummaryProps {

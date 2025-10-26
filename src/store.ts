@@ -228,9 +228,9 @@ export const useFCStore = create<FCState>((set, get) => {
       set(st => {
         const currentActive = st.sprints.find(s => s.status === 'Active');
         const next = st.sprints.map(s => {
-          if (s.id === id) return { ...s, status: 'Active', updatedAt: now() };
+          if (s.id === id) return { ...s, status: 'Active' as SprintStatus, updatedAt: now() };
           if (currentActive && s.id === currentActive.id && s.id !== id && s.status === 'Active') {
-            return { ...s, status: 'Planned', updatedAt: now() }; // wymuś pojedynczy Active
+            return { ...s, status: 'Planned' as SprintStatus, updatedAt: now() }; // wymuś pojedynczy Active
           }
           return s;
         });
@@ -248,7 +248,7 @@ export const useFCStore = create<FCState>((set, get) => {
           }
           return i;
         });
-        const nextSprints = st.sprints.map(s => s.id === id ? { ...s, status: 'Completed', updatedAt: now(), completedAt: now() } : s);
+        const nextSprints = st.sprints.map(s => s.id === id ? { ...s, status: 'Completed' as SprintStatus, updatedAt: now(), completedAt: now() } : s);
         return { issues: nextIssues, sprints: nextSprints };
       });
       return { returnedToBacklog: returned };

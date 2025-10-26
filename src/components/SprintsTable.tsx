@@ -74,10 +74,10 @@ export default function SprintsTable({ sprints }: { sprints: Sprint[] }) {
     setFilters(prev => ({ ...prev, [field]: value }))
   }
 
-  const clearFilter = (field: keyof FilterState) => {
-    setFilters(prev => ({ ...prev, [field]: '' }))
-    setActiveFilter(null)
-  }
+  // const clearFilter = (field: keyof FilterState) => { // Removed unused function
+  //   setFilters(prev => ({ ...prev, [field]: '' }))
+  //   setActiveFilter(null)
+  // }
 
   const getSprintStats = (sprintId: string) => {
     const sprintIssues = issues.filter(issue => issue.sprintId === sprintId)
@@ -89,12 +89,12 @@ export default function SprintsTable({ sprints }: { sprints: Sprint[] }) {
     return new Date(dateString).toLocaleDateString('pl-PL')
   }
 
-  const isDateInRange = (dateString: string, startDate: string, endDate: string) => {
-    const date = new Date(dateString)
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    return date >= start && date <= end
-  }
+  // const isDateInRange = (dateString: string, startDate: string, endDate: string) => { // Removed unused function
+  //   const date = new Date(dateString)
+  //   const start = new Date(startDate)
+  //   const end = new Date(endDate)
+  //   return date >= start && date <= end
+  // }
 
   return (
     <div className="card overflow-hidden">

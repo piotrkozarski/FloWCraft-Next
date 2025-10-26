@@ -1,4 +1,4 @@
-import type { Status } from '../types'
+import type { IssueStatus as Status } from '../types'
 
 export const STATUS_ORDER: Status[] = ['Todo','In Progress','In Review','Done']
 

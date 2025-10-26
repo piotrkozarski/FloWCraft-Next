@@ -13,15 +13,7 @@ const getStatusIcon = (status: Status) => {
   return icons[status]
 }
 
-const getStatusColor = (status: Status) => {
-  const colors = {
-    'Todo': 'status-todo',
-    'In Progress': 'status-in-progress',
-    'In Review': 'status-in-review',
-    'Done': 'status-done'
-  }
-  return colors[status]
-}
+// Removed unused function: getStatusColor
 
 interface StatusCardsProps {
   issues: Issue[]

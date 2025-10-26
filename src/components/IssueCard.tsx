@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
-import type { Issue, Priority, Status } from '../types'
+import type { Issue, IssuePriority as Priority, IssueStatus as Status } from '../types'
 import Avatar from './ui/Avatar'
 import Chip from './ui/Chip'
 import { ArrowLeft, ArrowRight, Check, Trash2 } from 'lucide-react'

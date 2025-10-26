@@ -9,25 +9,7 @@ import Avatar from './ui/Avatar'
 const statuses: Status[] = ['Todo','In Progress','In Review','Done']
 const priorities: Priority[] = ['P0','P1','P2','P3','P4','P5']
 
-const getStatusIcon = (status: Status) => {
-  const icons = {
-    'Todo': '📝',
-    'In Progress': '⚡',
-    'In Review': '👀',
-    'Done': '✅'
-  }
-  return icons[status]
-}
-
-const getStatusColor = (status: Status) => {
-  const colors = {
-    'Todo': 'status-todo',
-    'In Progress': 'status-in-progress',
-    'In Review': 'status-in-review',
-    'Done': 'status-done'
-  }
-  return colors[status]
-}
+// Removed unused functions: getStatusIcon, getStatusColor
 
 interface FilterState {
   title: string
@@ -94,10 +76,10 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
     setFilters(prev => ({ ...prev, [field]: value }))
   }
 
-  const clearFilter = (field: keyof FilterState) => {
-    setFilters(prev => ({ ...prev, [field]: '' }))
-    setActiveFilter(null)
-  }
+  // const clearFilter = (field: keyof FilterState) => { // Removed unused function
+  //   setFilters(prev => ({ ...prev, [field]: '' }))
+  //   setActiveFilter(null)
+  // }
 
   const getSprintName = (sprintId: string | null) => {
     if (!sprintId) return 'Backlog'
