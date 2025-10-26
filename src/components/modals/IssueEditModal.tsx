@@ -64,11 +64,14 @@ export default function IssueEditModal() {
   }, [issue, issues])
   
   // Assignee options
-  const assigneeOptions: Option<string>[] = useMemo(() =>
-    [{label:"Unassigned", value:""}, ...profiles.map(p => ({
-      label: p.username || p.email || p.id.slice(0,6),
-      value: p.id
-    }))], [profiles])
+  const assigneeOptions: Option<string>[] = useMemo(() => {
+    console.log('IssueEditModal profiles:', profiles)
+    return [{label:"Unassigned", value:""}, ...profiles.map(p => {
+      const label = p.username || p.email || "Unknown User"
+      console.log('Profile:', p, 'Label:', label)
+      return { label, value: p.id }
+    })]
+  }, [profiles])
   
   const parentOptions = useMemo(() => {
     const q = parentQuery.trim().toLowerCase()
