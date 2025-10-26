@@ -28,3 +28,4 @@ export interface Sprint {
   updatedAt: number;
   completedAt?: number;
 }
+
