@@ -1,17 +1,12 @@
 // src/types.ts
 
-// Issue domain
-export type IssueStatus = "Todo" | "In Progress" | "In Review" | "Done"
+export type IssueStatus   = "Todo" | "In Progress" | "In Review" | "Done"
 export type IssuePriority = "Low" | "Medium" | "High" | "Critical"
-export type IssueType = "Bug" | "Task" | "Feature" | "Story"
+export type IssueType     = "Bug" | "Task" | "Feature" | "Story"
+export type SprintStatus  = "Planned" | "Active" | "Completed"
 
-// Sprint domain
-export type SprintStatus = "Planned" | "Active" | "Completed"
-
-// Users
 export type UserRef = { id: string; username?: string | null; email?: string | null }
 
-// Entities
 export type Issue = {
   id: string
   title: string
@@ -23,6 +18,7 @@ export type Issue = {
   parentId?: string | null
   description?: string
   createdAt: string
+  updatedAt?: string           // ADDED - components reference this
   createdBy?: UserRef
 }
 
@@ -33,6 +29,8 @@ export type Sprint = {
   startDate: string
   endDate: string
   createdAt: string
+  updatedAt?: string           // ADDED - for consistency
+  completedAt?: string         // ADDED - store references this
   createdBy?: UserRef
 }
 

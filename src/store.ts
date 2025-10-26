@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Issue, Sprint, IssueStatus, IssuePriority, SprintStatus, IssueType, UserRef } from '@/types';
+import { mapLegacyPriority, toIsoString } from '@/utils/domain';
 import { supabase } from './lib/supabase';
 
 export type SprintPatch = Partial<Pick<Sprint, "name"|"startDate"|"endDate"|"status">>
@@ -62,9 +63,8 @@ function validateIssue(i: Partial<Issue>) {
   const allowedStatus: IssueStatus[] = ['Todo','In Progress','In Review','Done'];
   if (!allowedStatus.includes(i.status as IssueStatus)) throw new Error('Invalid status');
 
-  const allowedPrio: IssuePriority[] = ['P0','P1','P2','P3','P4','P5'];
+  const allowedPrio: IssuePriority[] = ['Low','Medium','High','Critical'];
   if (!i.priority || !allowedPrio.includes(i.priority as IssuePriority)) throw new Error('Invalid priority');
-  if (i.assignee && i.assignee.trim().length < 2) throw new Error('Assignee must be at least 2 chars');
 }
 
 function validateSprintDates(startDate: string, endDate: string) {
@@ -77,14 +77,14 @@ export const useFCStore = create<FCState>((set, get) => {
   const sprints: Sprint[] = (() => {
     const base = Date.now();
     return [
-      { id: nextSprintId(1), name: 'Q4 Kickoff', startDate: '2025-10-01', endDate: '2025-10-14', status: 'Completed', createdAt: base-10, updatedAt: base-10, completedAt: base-5 },
-      { id: nextSprintId(2), name: 'October Sprint', startDate: '2025-10-15', endDate: '2025-10-28', status: 'Active', createdAt: base-9, updatedAt: base-1 },
-      { id: nextSprintId(3), name: 'November Planning', startDate: '2025-10-29', endDate: '2025-11-11', status: 'Planned', createdAt: base-8, updatedAt: base-8 },
+      { id: nextSprintId(1), name: 'Q4 Kickoff', startDate: '2025-10-01', endDate: '2025-10-14', status: 'Completed', createdAt: toIsoString(base-10), updatedAt: toIsoString(base-10), completedAt: toIsoString(base-5) },
+      { id: nextSprintId(2), name: 'October Sprint', startDate: '2025-10-15', endDate: '2025-10-28', status: 'Active', createdAt: toIsoString(base-9), updatedAt: toIsoString(base-1) },
+      { id: nextSprintId(3), name: 'November Planning', startDate: '2025-10-29', endDate: '2025-11-11', status: 'Planned', createdAt: toIsoString(base-8), updatedAt: toIsoString(base-8) },
     ];
   })();
 
   let issueSeq = 0;
-  const mk = (title: string, priority: IssuePriority, status: IssueStatus, sprintId: string | null, extra?: Partial<Issue>): Issue => {
+  const mk = (title: string, priority: string, status: IssueStatus, sprintId: string | null, extra?: Partial<Issue>): Issue => {
     issueSeq += 1;
     const id = nextIssueId(issueSeq);
     const base = now();
@@ -93,12 +93,11 @@ export const useFCStore = create<FCState>((set, get) => {
       title,
       description: extra?.description ?? '',
       status,
-      priority,
-      assignee: extra?.assignee,
-      assigneeId: extra?.assigneeId,
+      priority: mapLegacyPriority(priority),  // CONVERT legacy priority
+      assigneeId: extra?.assigneeId,          // ONLY assigneeId, no assignee
       sprintId,
-      createdAt: base,
-      updatedAt: base,
+      createdAt: toIsoString(base),           // CONVERT to string
+      updatedAt: toIsoString(base),           // CONVERT to string
       type: extra?.type ?? 'Task',
       parentId: extra?.parentId ?? null,
       createdBy: extra?.createdBy,
@@ -108,13 +107,13 @@ export const useFCStore = create<FCState>((set, get) => {
   const activeId = sprints.find(s => s.status === 'Active')?.id ?? null;
 
   const issues: Issue[] = [
-    mk('Fix critical auth bug', 'P0', 'In Progress', activeId, { assignee: 'Alex' }),
+    mk('Fix critical auth bug', 'P0', 'In Progress', activeId, { assigneeId: 'user-1' }),
     mk('Payment webhook retries', 'P0', 'Todo', activeId),
-    mk('Kanban DnD polish', 'P1', 'In Review', activeId, { assignee: 'Maya' }),
+    mk('Kanban DnD polish', 'P1', 'In Review', activeId, { assigneeId: 'user-2' }),
     mk('Bulk assign modal', 'P1', 'Todo', activeId),
     mk('Sprint summary dialog', 'P1', 'Todo', activeId),
 
-    mk('Priority badges', 'P2', 'In Progress', activeId, { assignee: 'Leo' }),
+    mk('Priority badges', 'P2', 'In Progress', activeId, { assigneeId: 'user-3' }),
     mk('Issue edit modal', 'P2', 'Done', activeId),
     mk('Filter by assignee', 'P2', 'Todo', null),
     mk('Sort by priority', 'P2', 'In Review', activeId),
@@ -151,8 +150,8 @@ export const useFCStore = create<FCState>((set, get) => {
       const created: Issue = { 
         ...input, 
         id, 
-        createdAt: now(), 
-        updatedAt: now(),
+        createdAt: new Date().toISOString(),    // STRING not number
+        updatedAt: new Date().toISOString(),    // ADD updatedAt
         type: input.type ?? 'Task',
         parentId: input.parentId ?? null,
         description: input.description ?? '',
@@ -165,7 +164,7 @@ export const useFCStore = create<FCState>((set, get) => {
 
     updateIssue(id, patch) {
       set(st => ({
-        issues: st.issues.map(it => it.id === id ? { ...it, ...patch, updatedAt: now() } : it)
+        issues: st.issues.map(it => it.id === id ? { ...it, ...patch, updatedAt: new Date().toISOString() } : it)
       }));
     },
 
@@ -205,8 +204,8 @@ export const useFCStore = create<FCState>((set, get) => {
         startDate: input.startDate,
         endDate: input.endDate,
         status: input.status ?? 'Planned',
-        createdAt: now(),
-        updatedAt: now(),
+        createdAt: new Date().toISOString(),    // STRING not number
+        updatedAt: new Date().toISOString(),    // ADD updatedAt
         createdBy,
       };
       set(st => ({ sprints: [sprint, ...st.sprints], _sprintSeq: st._sprintSeq + 1 }));
@@ -218,9 +217,9 @@ export const useFCStore = create<FCState>((set, get) => {
       set(st => {
         const currentActive = st.sprints.find(s => s.status === 'Active');
         const next = st.sprints.map(s => {
-          if (s.id === id) return { ...s, status: 'Active' as SprintStatus, updatedAt: now() };
+          if (s.id === id) return { ...s, status: 'Active' as SprintStatus, updatedAt: new Date().toISOString() };
           if (currentActive && s.id === currentActive.id && s.id !== id && s.status === 'Active') {
-            return { ...s, status: 'Planned' as SprintStatus, updatedAt: now() }; // wymuś pojedynczy Active
+            return { ...s, status: 'Planned' as SprintStatus, updatedAt: new Date().toISOString() }; // wymuś pojedynczy Active
           }
           return s;
         });
@@ -234,11 +233,11 @@ export const useFCStore = create<FCState>((set, get) => {
         const nextIssues = st.issues.map(i => {
           if (i.sprintId === id && i.status !== 'Done') {
             returned += 1;
-            return { ...i, sprintId: null, updatedAt: now() };
+            return { ...i, sprintId: null, updatedAt: new Date().toISOString() };
           }
           return i;
         });
-        const nextSprints = st.sprints.map(s => s.id === id ? { ...s, status: 'Completed' as SprintStatus, updatedAt: now(), completedAt: now() } : s);
+        const nextSprints = st.sprints.map(s => s.id === id ? { ...s, status: 'Completed' as SprintStatus, updatedAt: new Date().toISOString(), completedAt: new Date().toISOString() } : s);
         return { issues: nextIssues, sprints: nextSprints };
       });
       return { returnedToBacklog: returned };
@@ -256,7 +255,7 @@ export const useFCStore = create<FCState>((set, get) => {
     updateSprint(id, patch) {
       set(state => ({
         sprints: state.sprints.map(s =>
-          s.id === id ? { ...s, ...patch, updatedAt: now() } : s
+          s.id === id ? { ...s, ...patch, updatedAt: new Date().toISOString() } : s
         )
       }));
     },
