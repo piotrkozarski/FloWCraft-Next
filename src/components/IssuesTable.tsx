@@ -1,12 +1,13 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
-import type { Issue, Status } from '../store'
+import type { Issue, IssueStatus } from '../types'
 import type { Priority } from '../constants/priority'
 import Badge from './ui/Badge'
 import Avatar from './ui/Avatar'
+import { fetchProfiles } from '../services/users'
 
-const statuses: Status[] = ['Todo','In Progress','In Review','Done']
+const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 const priorities: Priority[] = ['P0','P1','P2','P3','P4','P5']
 
 // Removed unused functions: getStatusIcon, getStatusColor
@@ -25,6 +26,19 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
   const deleteIssue = useFCStore(s => s.deleteIssue)
   const sprints = useFCStore(s => s.sprints)
   const assign = useFCStore(s => s.assignIssueToSprint)
+  
+  const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles().then(setProfiles)
+  }, [])
+
+  // Helper to map assignee ID to name
+  const mapName = (id?: string | null) => {
+    const p = profiles.find(x => x.id === id)
+    return p?.username || p?.email || "Unassigned"
+  }
 
   const [filters, setFilters] = useState<FilterState>({
     title: '',
@@ -268,7 +282,7 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
                     <select
                       className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={issue.status}
-                      onChange={(e) => updateStatus(issue.id, e.target.value as Status)}
+                      onChange={(e) => updateStatus(issue.id, e.target.value as IssueStatus)}
                     >
                       {statuses.map(status => (
                         <option key={status} value={status}>{status}</option>
@@ -286,13 +300,10 @@ export default function IssuesTable({ issues }: { issues: Issue[] }) {
                   {/* Assignee */}
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                      <Avatar name={issue.assignee} />
-                      <input
-                        className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={issue.assignee || ''}
-                        placeholder="Assignee"
-                        onChange={(e) => updateIssue(issue.id, { assignee: e.target.value || undefined })}
-                      />
+                      <Avatar name={mapName(issue.assigneeId)} />
+                      <span className="text-sm text-slate-700">
+                        {mapName(issue.assigneeId)}
+                      </span>
                     </div>
                   </td>
                   

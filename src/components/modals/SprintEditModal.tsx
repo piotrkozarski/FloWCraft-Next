@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react"
 import Modal from "../ui/Modal"
 import { useUI } from "../../store/ui"
 import { useFCStore } from "../../store"
-import type { SprintStatus } from "../../store"
+import type { SprintStatus } from "../../types"
 import Select, { type Option } from "../ui/Select"
 
 // const STATUSES: SprintStatus[] = ["Planned","Active","Completed"] // Removed unused constant
@@ -79,6 +79,11 @@ export default function SprintEditModal() {
             onChange={e => setName(e.target.value)} 
             autoFocus 
           />
+          {sprint?.createdBy && (
+            <div className="text-[10px] text-[var(--muted)] mt-0.5">
+              Created by {sprint.createdBy.username || sprint.createdBy.email}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

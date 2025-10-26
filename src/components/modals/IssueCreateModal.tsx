@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react"
 import Modal from "../ui/Modal"
 import { useUI } from "../../store/ui"
 import { useFCStore } from "../../store"
-import type { Priority, Status, Issue, IssueType } from "../../store"
+import type { IssuePriority, IssueStatus, Issue, IssueType } from "../../types"
 import { Search, ChevronDown, X } from "lucide-react"
+import Select, { Option } from "../ui/Select"
+import { fetchProfiles } from "../../services/users"
 
-const PRIORITIES: Priority[] = ["P0","P1","P2","P3","P4","P5"]
-const STATUSES: Status[] = ["Todo","In Progress","In Review","Done"]
+const PRIORITIES: IssuePriority[] = ["P0","P1","P2","P3","P4","P5"]
+const STATUSES: IssueStatus[] = ["Todo","In Progress","In Review","Done"]
 const TYPES: IssueType[] = ["Bug","Task","Feature","Story"]
 
 export default function IssueCreateModal() {
@@ -21,25 +23,39 @@ export default function IssueCreateModal() {
   // form state
   const [title, setTitle] = useState("")
   const [type, setType] = useState<IssueType>("Task")
-  const [priority, setPriority] = useState<Priority>("P2")
-  const [status, setStatus] = useState<Status>("Todo")
+  const [priority, setPriority] = useState<IssuePriority>("P2")
+  const [status, setStatus] = useState<IssueStatus>("Todo")
   const [assignee, setAssignee] = useState("")
+  const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [sprintId, setSprintId] = useState<string | "backlog">(active?.id ?? "backlog")
   const [description, setDescription] = useState("")
   const [parentQuery, setParentQuery] = useState("")
   const [parent, setParent] = useState<Issue | null>(null)
   const [showParentOptions, setShowParentOptions] = useState(false)
+  const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles().then(setProfiles)
+  }, [])
 
   // reset na otwarciu
   useEffect(() => {
     if (open) {
       setTitle(""); setType("Task"); setPriority("P2"); setStatus("Todo")
-      setAssignee(""); setSprintId(active?.id ?? "backlog"); setDescription("")
+      setAssignee(""); setAssigneeId(null); setSprintId(active?.id ?? "backlog"); setDescription("")
       setParentQuery(""); setParent(null); setShowParentOptions(false)
     }
   }, [open, active?.id])
 
   const canSave = title.trim().length >= 3
+
+  // Assignee options
+  const assigneeOptions: Option<string>[] = useMemo(() =>
+    [{label:"Unassigned", value:""}, ...profiles.map(p => ({
+      label: p.username || p.email || p.id.slice(0,6),
+      value: p.id
+    }))], [profiles])
 
   // źródło podpowiedzi dla „Zadanie nadrzędne"
   const parentOptions = useMemo(() => {
@@ -64,15 +80,16 @@ export default function IssueCreateModal() {
     setShowParentOptions(false)
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!canSave) return
-    addIssue({
+    await addIssue({
       title: title.trim(),
       type,
       priority,
       status,
       assignee: assignee.trim() || undefined,
+      assigneeId: assigneeId,
       sprintId: sprintId === "backlog" ? null : sprintId,
       description: description.trim(),
       parentId: parent?.id ?? null,
@@ -136,11 +153,10 @@ export default function IssueCreateModal() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm mb-1 text-[var(--muted)]">Assignee</label>
-            <input
-              className="w-full rounded-md bg-[var(--surface)] border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)]"
-              placeholder="np. Alex"
-              value={assignee}
-              onChange={e=>setAssignee(e.target.value)}
+            <Select
+              value={assigneeId ?? ""}
+              onChange={(v)=> setAssigneeId(v || null)}
+              options={assigneeOptions}
             />
           </div>
 

@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from "react"
 import Modal from "../ui/Modal"
 import { useUI } from "../../store/ui"
 import { useFCStore } from "../../store"
-import type { Issue, IssueType, Priority, Status } from "../../store"
+import type { Issue, IssueType, IssuePriority, IssueStatus } from "../../types"
 import ConfirmModal from "../ui/ConfirmModal"
 import { Search, ChevronDown, X } from "lucide-react"
+import Select, { Option } from "../ui/Select"
+import { fetchProfiles } from "../../services/users"
 
 const TYPES: IssueType[] = ["Bug","Task","Feature","Story"]
-const PRIORITIES: Priority[] = ["P0","P1","P2","P3","P4","P5"]
-const STATUSES: Status[] = ["Todo","In Progress","In Review","Done"]
+const PRIORITIES: IssuePriority[] = ["P0","P1","P2","P3","P4","P5"]
+const STATUSES: IssueStatus[] = ["Todo","In Progress","In Review","Done"]
 
 export default function IssueEditModal() {
   const { selectedIssueId, closeIssueDetail, openConfirm, closeConfirm, confirm } = useUI()
@@ -22,14 +24,21 @@ export default function IssueEditModal() {
   // Form state - initialize with current issue values
   const [title, setTitle] = useState("")
   const [type, setType] = useState<IssueType>("Task")
-  const [priority, setPriority] = useState<Priority>("P2")
-  const [status, setStatus] = useState<Status>("Todo")
+  const [priority, setPriority] = useState<IssuePriority>("P2")
+  const [status, setStatus] = useState<IssueStatus>("Todo")
   const [assignee, setAssignee] = useState("")
+  const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [sprintId, setSprintId] = useState<string | "backlog">("backlog")
   const [description, setDescription] = useState("")
   const [parentQuery, setParentQuery] = useState("")
   const [parent, setParent] = useState<Issue | null>(null)
   const [showParentOptions, setShowParentOptions] = useState(false)
+  const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles().then(setProfiles)
+  }, [])
 
   // Initialize form with issue data when issue changes
   useEffect(() => {
@@ -39,6 +48,7 @@ export default function IssueEditModal() {
       setPriority(issue.priority)
       setStatus(issue.status)
       setAssignee(issue.assignee || "")
+      setAssigneeId(issue.assigneeId || null)
       setSprintId(issue.sprintId || "backlog")
       setDescription(issue.description || "")
       
@@ -53,6 +63,13 @@ export default function IssueEditModal() {
       }
     }
   }, [issue, issues])
+  
+  // Assignee options
+  const assigneeOptions: Option<string>[] = useMemo(() =>
+    [{label:"Unassigned", value:""}, ...profiles.map(p => ({
+      label: p.username || p.email || p.id.slice(0,6),
+      value: p.id
+    }))], [profiles])
   
   const parentOptions = useMemo(() => {
     const q = parentQuery.trim().toLowerCase()
@@ -97,6 +114,7 @@ export default function IssueEditModal() {
       priority,
       status,
       assignee: assignee.trim() || undefined,
+      assigneeId: assigneeId,
       sprintId: sprintId === "backlog" ? null : sprintId,
       description: description.trim(),
       parentId: parent?.id ?? null,
@@ -129,6 +147,11 @@ export default function IssueEditModal() {
               autoFocus
             />
             <p className="text-xs text-[var(--muted)] mt-1">Min. 3 znaki.</p>
+            {issue?.createdBy && (
+              <div className="text-xs text-[var(--muted)] mt-1">
+                Created by {issue.createdBy.username || issue.createdBy.email}
+              </div>
+            )}
           </div>
 
           {/* Row: Type / Priority / Status / Sprint */}
@@ -144,7 +167,7 @@ export default function IssueEditModal() {
             <div>
               <label className="block text-sm mb-1 text-[var(--muted)]">Priority</label>
               <select className="w-full rounded-md bg-[var(--surface)] border border-[var(--border)] px-2 py-2 text-sm text-[var(--text)]"
-                      value={priority} onChange={e=>setPriority(e.target.value as Priority)}>
+                      value={priority} onChange={e=>setPriority(e.target.value as IssuePriority)}>
                 {PRIORITIES.map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
@@ -152,7 +175,7 @@ export default function IssueEditModal() {
             <div>
               <label className="block text-sm mb-1 text-[var(--muted)]">Status</label>
               <select className="w-full rounded-md bg-[var(--surface)] border border-[var(--border)] px-2 py-2 text-sm text-[var(--text)]"
-                      value={status} onChange={e=>setStatus(e.target.value as Status)}>
+                      value={status} onChange={e=>setStatus(e.target.value as IssueStatus)}>
                 {STATUSES.map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
@@ -171,11 +194,10 @@ export default function IssueEditModal() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm mb-1 text-[var(--muted)]">Assignee</label>
-              <input
-                className="w-full rounded-md bg-[var(--surface)] border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)]"
-                placeholder="np. Alex"
-                value={assignee}
-                onChange={e=>setAssignee(e.target.value)}
+              <Select
+                value={assigneeId ?? ""}
+                onChange={(v)=> setAssigneeId(v || null)}
+                options={assigneeOptions}
               />
             </div>
 

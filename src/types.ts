@@ -4,6 +4,8 @@ export type IssuePriority = 'P0' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
 export type SprintStatus = 'Planned' | 'Active' | 'Completed';
 export type IssueType = 'Bug' | 'Task' | 'Feature' | 'Story';
 
+export type UserRef = { id: string; username?: string | null; email?: string | null }
+
 export interface Issue {
   id: string;
   title: string;
@@ -11,11 +13,13 @@ export interface Issue {
   status: IssueStatus;
   priority: IssuePriority;
   assignee?: string;
+  assigneeId?: string | null;
   sprintId: string | null;
   createdAt: number;
   updatedAt: number;
   type: IssueType;
   parentId?: string | null;
+  createdBy?: UserRef;
 }
 
 export interface Sprint {
@@ -27,5 +31,6 @@ export interface Sprint {
   createdAt: number;
   updatedAt: number;
   completedAt?: number;
+  createdBy?: UserRef;
 }
 

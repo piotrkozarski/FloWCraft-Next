@@ -1,6 +1,14 @@
 import { create } from "zustand"
 import { supabase } from "../lib/supabase"
 
+async function ensureProfile() {
+  const authUser = (await supabase.auth.getUser()).data.user
+  if (!authUser) return
+  const { id, email } = authUser
+  // jeśli brak rekordu, utwórz pusty z samym email; username uzupełnimy przy rejestracji
+  await supabase.from("profiles").upsert({ id, email }, { onConflict: "id" })
+}
+
 type User = {
   id: string
   email?: string | null
@@ -17,7 +25,7 @@ type AuthState = {
   signOut: () => Promise<void>
 }
 
-export const useAuth = create<AuthState>((set) => ({
+export const useAuth = create<AuthState>((set, get) => ({
   user: null,
   loading: true,
   error: null,
@@ -31,9 +39,15 @@ export const useAuth = create<AuthState>((set) => ({
       loading: false,
       error: null
     })
+    
+    // Ensure profile exists after setting user
+    await ensureProfile()
+    
     supabase.auth.onAuthStateChange((_event, sess) => {
       const u = sess?.user
       set({ user: u ? { id: u.id, email: u.email ?? null, avatar_url: u.user_metadata?.avatar_url } : null })
+      // Ensure profile exists after auth state change
+      ensureProfile()
     })
   },
 

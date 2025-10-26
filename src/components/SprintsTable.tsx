@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useFCStore, type SprintStatus } from '../store'
-import type { Sprint } from '../store'
+import { useFCStore } from '../store'
+import type { Sprint, SprintStatus } from '../types'
 
 const statuses: SprintStatus[] = ['Planned', 'Active', 'Completed']
 
@@ -238,6 +238,11 @@ export default function SprintsTable({ sprints }: { sprints: Sprint[] }) {
                         <div>
                           <div className="text-sm font-medium text-slate-900">{sprint.name}</div>
                           <div className="text-xs text-slate-500 font-mono">{sprint.id}</div>
+                          {sprint.createdBy && (
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              Created by {sprint.createdBy.username || sprint.createdBy.email}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>

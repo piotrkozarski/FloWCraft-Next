@@ -2,7 +2,7 @@ import { useState, useMemo } from "react"
 import Modal from "../ui/Modal"
 import { useUI } from "../../store/ui"
 import { useFCStore } from "../../store"
-import type { SprintStatus } from "../../store"
+import type { SprintStatus } from "../../types"
 import Select, { type Option } from "../ui/Select"
 
 // const STATUSES: SprintStatus[] = ["Planned","Active","Completed"] // Removed unused constant
@@ -28,10 +28,10 @@ export default function SprintCreateModal() {
     setName(""); setStartDate(""); setEndDate(""); setStatus("Planned")
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!canSave) return
-    addSprint({
+    await addSprint({
       name: name.trim(),
       startDate, endDate, status
     })

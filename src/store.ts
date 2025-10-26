@@ -1,35 +1,6 @@
 import { create } from 'zustand';
-
-// Inline types to avoid import issues
-export type Status = 'Todo' | 'In Progress' | 'In Review' | 'Done';
-export type Priority = 'P0' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
-export type SprintStatus = 'Planned' | 'Active' | 'Completed';
-export type IssueType = 'Bug' | 'Task' | 'Feature' | 'Story';
-
-export interface Issue {
-  id: string;
-  title: string;
-  description?: string;
-  status: Status;
-  priority: Priority;
-  assignee?: string;
-  sprintId: string | null;
-  createdAt: number;
-  updatedAt: number;
-  type: IssueType;
-  parentId?: string | null;
-}
-
-export interface Sprint {
-  id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  status: SprintStatus;
-  createdAt: number;
-  updatedAt: number;
-  completedAt?: number;
-}
+import { Issue, Sprint, IssueStatus, IssuePriority, SprintStatus, IssueType, UserRef } from './types';
+import { supabase } from './lib/supabase';
 
 export type SprintPatch = Partial<Pick<Sprint, "name"|"startDate"|"endDate"|"status">>
 
@@ -49,37 +20,50 @@ type FCState = {
   getActiveSprint(): Sprint | null;
 
   // Issue ops
-  createIssue(input: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>): Issue;
+  createIssue(input: Omit<Issue, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>): Promise<Issue>;
   updateIssue(id: string, patch: Partial<Omit<Issue, 'id' | 'createdAt'>>): void;
   deleteIssue(id: string): void;
-  updateIssueStatus(id: string, status: Status): void;
+  updateIssueStatus(id: string, status: IssueStatus): void;
 
   // Assignment
   assignIssueToSprint(id: string, sprintId: string | null): void;
   bulkAssignToSprint(ids: string[], sprintId: string | null): void;
 
   // Sprint ops
-  createSprint(input: Omit<Sprint, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'completedAt'> & { status?: SprintStatus }): Sprint;
+  createSprint(input: Omit<Sprint, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'completedAt' | 'createdBy'> & { status?: SprintStatus }): Promise<Sprint>;
   updateSprint(id: string, patch: SprintPatch): void;
   deleteSprint(id: string): void;
   startSprint(id: string): void;
   endSprint(id: string): { returnedToBacklog: number };
 
   // Drag-drop w obrębie current sprint
-  moveInCurrentSprint(issueId: string, toStatus: Status): void;
+  moveInCurrentSprint(issueId: string, toStatus: IssueStatus): void;
 };
 
 const now = () => Date.now();
+
+// Helper to get current user reference
+async function getCurrentUserRef(): Promise<UserRef | undefined> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return undefined
+  
+  const profile = await supabase.from("profiles").select("username,email").eq("id", user.id).maybeSingle()
+  return { 
+    id: user.id, 
+    username: profile.data?.username ?? null, 
+    email: user.email ?? null 
+  }
+}
 
 // Walidacje podstawowe
 function validateIssue(i: Partial<Issue>) {
   if (!i.title || !i.title.trim()) throw new Error('Title cannot be empty');
   if (!i.status) throw new Error('Status is required');
-  const allowedStatus: Status[] = ['Todo','In Progress','In Review','Done'];
-  if (!allowedStatus.includes(i.status as Status)) throw new Error('Invalid status');
+  const allowedStatus: IssueStatus[] = ['Todo','In Progress','In Review','Done'];
+  if (!allowedStatus.includes(i.status as IssueStatus)) throw new Error('Invalid status');
 
-  const allowedPrio: Priority[] = ['P0','P1','P2','P3','P4','P5'];
-  if (!i.priority || !allowedPrio.includes(i.priority as Priority)) throw new Error('Invalid priority');
+  const allowedPrio: IssuePriority[] = ['P0','P1','P2','P3','P4','P5'];
+  if (!i.priority || !allowedPrio.includes(i.priority as IssuePriority)) throw new Error('Invalid priority');
   if (i.assignee && i.assignee.trim().length < 2) throw new Error('Assignee must be at least 2 chars');
 }
 
@@ -100,7 +84,7 @@ export const useFCStore = create<FCState>((set, get) => {
   })();
 
   let issueSeq = 0;
-  const mk = (title: string, priority: Priority, status: Status, sprintId: string | null, extra?: Partial<Issue>): Issue => {
+  const mk = (title: string, priority: IssuePriority, status: IssueStatus, sprintId: string | null, extra?: Partial<Issue>): Issue => {
     issueSeq += 1;
     const id = nextIssueId(issueSeq);
     const base = now();
@@ -111,11 +95,13 @@ export const useFCStore = create<FCState>((set, get) => {
       status,
       priority,
       assignee: extra?.assignee,
+      assigneeId: extra?.assigneeId,
       sprintId,
       createdAt: base,
       updatedAt: base,
       type: extra?.type ?? 'Task',
       parentId: extra?.parentId ?? null,
+      createdBy: extra?.createdBy,
     };
   };
 
@@ -157,9 +143,10 @@ export const useFCStore = create<FCState>((set, get) => {
       return get().sprints.find(s => s.status === 'Active') ?? null;
     },
 
-    createIssue(input) {
+    async createIssue(input) {
       console.log('Store createIssue called with:', input);
       validateIssue(input);
+      const createdBy = await getCurrentUserRef();
       const id = nextIssueId(get()._issueSeq + 1);
       const created: Issue = { 
         ...input, 
@@ -169,6 +156,7 @@ export const useFCStore = create<FCState>((set, get) => {
         type: input.type ?? 'Task',
         parentId: input.parentId ?? null,
         description: input.description ?? '',
+        createdBy,
       };
       set(st => ({ issues: [created, ...st.issues], _issueSeq: st._issueSeq + 1 }));
       console.log('Store createIssue completed, new issue:', created);
@@ -186,7 +174,7 @@ export const useFCStore = create<FCState>((set, get) => {
     },
 
     updateIssueStatus(id, status) {
-      const allowed: Status[] = ['Todo','In Progress','In Review','Done'];
+      const allowed: IssueStatus[] = ['Todo','In Progress','In Review','Done'];
       if (!allowed.includes(status)) throw new Error('Invalid status');
       set(st => ({
         issues: st.issues.map(i => i.id === id ? { ...i, status, updatedAt: now() } : i)
@@ -206,9 +194,10 @@ export const useFCStore = create<FCState>((set, get) => {
       }));
     },
 
-    createSprint(input) {
+    async createSprint(input) {
       console.log('Store createSprint called with:', input);
       validateSprintDates(input.startDate, input.endDate);
+      const createdBy = await getCurrentUserRef();
       const id = nextSprintId(get()._sprintSeq + 1);
       const sprint: Sprint = {
         id,
@@ -218,6 +207,7 @@ export const useFCStore = create<FCState>((set, get) => {
         status: input.status ?? 'Planned',
         createdAt: now(),
         updatedAt: now(),
+        createdBy,
       };
       set(st => ({ sprints: [sprint, ...st.sprints], _sprintSeq: st._sprintSeq + 1 }));
       console.log('Store createSprint completed, new sprint:', sprint);
