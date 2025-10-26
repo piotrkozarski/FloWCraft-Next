@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useAuth } from "../auth/AuthContext"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "../lib/supabase"
-import { testSupabaseConnection, testAuth } from "../utils/testSupabase"
 
 export default function Register() {
   const { signUpWithEmail, loading } = useAuth()
@@ -12,7 +11,6 @@ export default function Register() {
   const [username, setUsername] = useState("")
   const [ok, setOk] = useState(false)
   const [localErr, setLocalErr] = useState<string | null>(null)
-  const [testResults, setTestResults] = useState<string>("")
   const navigate = useNavigate()
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -61,12 +59,6 @@ export default function Register() {
     }
   }
 
-  const runTests = async () => {
-    setTestResults("Running tests...")
-    const connectionTest = await testSupabaseConnection()
-    const authTest = await testAuth()
-    setTestResults(`Connection: ${connectionTest.success ? 'OK' : 'FAIL'} | Auth: ${authTest.success ? 'OK' : 'FAIL'}`)
-  }
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -112,13 +104,6 @@ export default function Register() {
             className="w-full btn-primary rounded-md px-3 py-2 disabled:opacity-50">
             {loading ? "Creating…" : "Create account"}
           </button>
-          
-          <div className="mt-4 p-3 bg-gray-100 rounded">
-            <button type="button" onClick={runTests} className="text-sm text-blue-600 mb-2">
-              Test Supabase Connection
-            </button>
-            {testResults && <div className="text-xs text-gray-600">{testResults}</div>}
-          </div>
         </form>
       </div>
     </div>
