@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { useAuth } from "../store/auth"
+import { useAuth } from "../auth/AuthContext"
 import { Shield, Sword } from "lucide-react"
 
 export default function Login() {
-  const { signInWithPassword, user, loading, error } = useAuth()
+  const { signInWithEmail, user, loading } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [localError, setLocalError] = useState<string | null>(null)
@@ -22,11 +22,11 @@ export default function Login() {
     console.log('Login: Starting sign in...')
     
     try {
-      const result = await signInWithPassword(email, password)
+      const result = await signInWithEmail(email, password)
       console.log('Login result:', result)
       
-      if (!result.success) {
-        setLocalError(result.error || "Login failed. Please try again.")
+      if (result.error) {
+        setLocalError(result.error)
       }
       // If successful, the useEffect will handle navigation when user state updates
     } catch (err) {
@@ -54,7 +54,7 @@ export default function Login() {
             <input type="password" value={password} onChange={e=>setPassword(e.target.value)}
               className="w-full date-input rounded-md px-3 py-2 text-sm" required />
           </div>
-          {(error || localError) && <div className="text-red-400 text-sm">{error || localError}</div>}
+          {localError && <div className="text-red-400 text-sm">{localError}</div>}
           <button disabled={loading}
             className="w-full bg-[var(--primary)] text-white rounded-md px-3 py-2 flex items-center justify-center gap-2 hover:bg-[color-mix(in_oklab,var(--primary) 80%,transparent)] disabled:opacity-50">
             <Sword className="w-4 h-4" /> {loading ? "Signing in…" : "Sign in"}

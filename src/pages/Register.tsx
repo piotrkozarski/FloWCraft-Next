@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { useAuth } from "../store/auth"
+import { useAuth } from "../auth/AuthContext"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "../lib/supabase"
 import { testSupabaseConnection, testAuth } from "../utils/testSupabase"
 
 export default function Register() {
-  const { signUpWithPassword, loading, error } = useAuth()
+  const { signUpWithEmail, loading } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
@@ -31,23 +31,15 @@ export default function Register() {
     console.log('Starting registration process...')
 
     try {
-      const result = await signUpWithPassword(email, password)
+      const result = await signUpWithEmail(email, password)
       console.log('Registration result:', result)
       
-      if (!result.success) {
-        setLocalErr(result.error || "Registration failed. Please try again.")
+      if (result.error) {
+        setLocalErr(result.error)
         return
       }
       
-      if (result.requiresConfirmation) {
-        // Email confirmation required
-        setOk(true)
-        setLocalErr(null)
-        setTimeout(() => navigate("/login", { replace: true }), 3000)
-        return
-      }
-      
-      // User is immediately signed in (no email confirmation required)
+      // User created successfully
       if (result.user) {
         try {
           await supabase.from("profiles").upsert({ 
@@ -112,9 +104,8 @@ export default function Register() {
             <div className="text-red-400 text-xs">Passwords do not match.</div>
           )}
           {localErr && <div className="text-red-400 text-sm">{localErr}</div>}
-          {error && <div className="text-red-400 text-sm">{error}</div>}
           {ok && <div className="text-green-400 text-sm">
-            Account created successfully! {error ? "Check your email to confirm your account." : "You can now log in."}
+            Account created successfully! You can now log in.
           </div>}
 
           <button disabled={!canSubmit}

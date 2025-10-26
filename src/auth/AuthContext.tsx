@@ -7,6 +7,7 @@ type AuthCtx = {
   session: Session | null;
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
+  signUpWithEmail: (email: string, password: string) => Promise<{ error?: string; user?: User }>;
   signOut: () => Promise<void>;
 };
 
@@ -34,10 +35,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error?.message };
   };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    return { error: error?.message, user: data.user };
+  };
+
   const signOut = async () => { await supabase.auth.signOut(); };
 
   return (
-    <Ctx.Provider value={{ user, session, loading, signInWithEmail, signOut }}>
+    <Ctx.Provider value={{ user, session, loading, signInWithEmail, signUpWithEmail, signOut }}>
       {children}
     </Ctx.Provider>
   );

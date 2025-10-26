@@ -50,31 +50,45 @@ export const useAuth = create<AuthState>((set, get) => ({
   error: null,
 
   init: async () => {
-    set({ loading: true })
-    const { data: { session } } = await supabase.auth.getSession()
-    const sUser = session?.user
-    set({
-      user: sUser ? { id: sUser.id, email: sUser.email ?? null, avatar_url: sUser.user_metadata?.avatar_url } : null,
-      loading: false,
-      error: null
-    })
-    
-    // Ensure profile exists after setting user
-    await ensureProfile()
-    
-    supabase.auth.onAuthStateChange((_event, sess) => {
-      const u = sess?.user
-      set({ user: u ? { id: u.id, email: u.email ?? null, avatar_url: u.user_metadata?.avatar_url } : null })
-      // Ensure profile exists after auth state change with timeout
-      if (u) {
-        Promise.race([
-          ensureProfile(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('ensureProfile timeout')), 5000))
-        ]).catch(error => {
-          console.error('Error in auth state change ensureProfile:', error)
-        })
-      }
-    })
+    try {
+      console.log('Auth store: Initializing...')
+      set({ loading: true })
+      
+      const { data: { session }, error } = await supabase.auth.getSession()
+      console.log('Auth store: Session check result:', { session: !!session, error })
+      
+      const sUser = session?.user
+      set({
+        user: sUser ? { id: sUser.id, email: sUser.email ?? null, avatar_url: sUser.user_metadata?.avatar_url } : null,
+        loading: false,
+        error: null
+      })
+      
+      // Ensure profile exists after setting user (don't await to prevent blocking)
+      ensureProfile().catch(error => {
+        console.error('Error in init ensureProfile:', error)
+      })
+      
+      supabase.auth.onAuthStateChange((_event, sess) => {
+        console.log('Auth store: Auth state changed:', { event: _event, hasUser: !!sess?.user })
+        const u = sess?.user
+        set({ user: u ? { id: u.id, email: u.email ?? null, avatar_url: u.user_metadata?.avatar_url } : null })
+        // Ensure profile exists after auth state change with timeout
+        if (u) {
+          Promise.race([
+            ensureProfile(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('ensureProfile timeout')), 5000))
+          ]).catch(error => {
+            console.error('Error in auth state change ensureProfile:', error)
+          })
+        }
+      })
+      
+      console.log('Auth store: Initialization complete')
+    } catch (error) {
+      console.error('Auth store: Initialization error:', error)
+      set({ loading: false, error: 'Failed to initialize authentication' })
+    }
   },
 
   signInWithPassword: async (email, password) => {
