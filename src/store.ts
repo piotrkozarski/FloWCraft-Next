@@ -139,11 +139,16 @@ export const useFCStore = create<FCState>((set, get) => ({
         issueId = nextIssueId((countData?.length || 0) + attempts + 1);
         
         // Check if ID already exists
-        const { data: existing } = await supabase
+        const { data: existing, error: checkError } = await supabase
           .from('issues')
           .select('id')
           .eq('id', issueId)
-          .single();
+          .maybeSingle();
+        
+        if (checkError) {
+          console.error('Error checking existing ID:', checkError);
+          break;
+        }
         
         if (!existing) break;
         attempts++;
@@ -312,11 +317,16 @@ export const useFCStore = create<FCState>((set, get) => ({
         sprintId = nextSprintId((countData?.length || 0) + attempts + 1);
         
         // Check if ID already exists
-        const { data: existing } = await supabase
+        const { data: existing, error: checkError } = await supabase
           .from('sprints')
           .select('id')
           .eq('id', sprintId)
-          .single();
+          .maybeSingle();
+        
+        if (checkError) {
+          console.error('Error checking existing ID:', checkError);
+          break;
+        }
         
         if (!existing) break;
         attempts++;
