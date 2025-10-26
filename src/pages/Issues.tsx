@@ -1,12 +1,26 @@
 import { useFCStore } from "../store"
 import { useUI } from "../store/ui"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { fetchProfiles } from "../services/users"
 
 export default function Issues() {
   const issues = useFCStore(s => s.issues)
   const ui = useUI()
   const [q, setQ] = useState("")
   const filtered = useMemo(() => issues.filter(i => i.title.toLowerCase().includes(q.toLowerCase())), [issues, q])
+  
+  const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles().then(setProfiles)
+  }, [])
+
+  // Helper to map assignee ID to name
+  const mapName = (id?: string | null) => {
+    const p = profiles.find(x => x.id === id)
+    return p?.username || p?.email || "Unassigned"
+  }
 
   return (
     <div className="card">
@@ -30,7 +44,7 @@ export default function Issues() {
           <div><span className={`badge type ${i.type.toLowerCase()}`}>{i.type}</span></div>
           <div><span className={`badge priority ${i.priority}`}>{i.priority}</span></div>
           <div><span className={`badge ${i.status.toLowerCase().replace(" ", "")}`}>{i.status}</span></div>
-          <div>{i.assigneeId ?? "—"}</div>
+          <div>{mapName(i.assigneeId)}</div>
           <div>{new Date(i.updatedAt ?? i.createdAt).toLocaleDateString()}</div>
           <div className="text-gray-500" onClick={(e) => { e.stopPropagation(); ui.openIssueDetail(i.id) }}>⋮</div>
         </div>

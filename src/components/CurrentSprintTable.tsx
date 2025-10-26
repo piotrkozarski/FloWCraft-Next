@@ -287,7 +287,7 @@ export default function CurrentSprintTable({ issues, activeSprint }: { issues: I
                       <Avatar name={mapName(issue.assigneeId)} />
                       <input
                         className="text-sm border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={issue.assigneeId || ''}
+                        value={mapName(issue.assigneeId)}
                         placeholder="Assignee"
                         onChange={(e) => updateIssue(issue.id, { assigneeId: e.target.value || undefined })}
                       />
