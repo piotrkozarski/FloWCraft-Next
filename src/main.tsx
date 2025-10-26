@@ -6,6 +6,8 @@ import Issues from './pages/Issues'
 import CurrentSprint from './pages/CurrentSprint'
 import Sprints from './pages/Sprints'
 import Reports from './pages/Reports'
+import SprintPerformanceReport from './pages/reports/SprintPerformanceReport'
+import UserActivityReport from './pages/reports/UserActivityReport'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AuthCallback from './pages/AuthCallback'
@@ -37,7 +39,15 @@ const router = createBrowserRouter([
           { index: true, element: <Issues /> },
           { path: 'current', element: <CurrentSprint /> },
           { path: 'sprints', element: <Sprints /> },
-          { path: 'reports', element: <Reports /> },
+          { 
+            path: 'reports', 
+            element: <Reports />,
+            children: [
+              { index: true, element: <SprintPerformanceReport /> },
+              { path: 'sprint-performance', element: <SprintPerformanceReport /> },
+              { path: 'user-activity', element: <UserActivityReport /> },
+            ]
+          },
         ]
       }
     ]
