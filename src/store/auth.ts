@@ -25,7 +25,12 @@ type AuthState = {
   error?: string | null
   init: () => Promise<void>
   signInWithPassword: (email: string, password: string) => Promise<void>
-  signUpWithPassword: (email: string, password: string) => Promise<void>
+  signUpWithPassword: (email: string, password: string) => Promise<{
+    success: boolean
+    error?: string
+    requiresConfirmation?: boolean
+    user?: User | null
+  }>
   signOut: () => Promise<void>
 }
 
