@@ -63,7 +63,7 @@ function validateIssue(i: Partial<Issue>) {
   const allowedStatus: IssueStatus[] = ['Todo','In Progress','In Review','Done'];
   if (!allowedStatus.includes(i.status as IssueStatus)) throw new Error('Invalid status');
 
-  const allowedPrio: IssuePriority[] = ['Low','Medium','High','Critical'];
+  const allowedPrio: IssuePriority[] = ['P0','P1','P2','P3','P4','P5'];
   if (!i.priority || !allowedPrio.includes(i.priority as IssuePriority)) throw new Error('Invalid priority');
 }
 
@@ -84,7 +84,7 @@ export const useFCStore = create<FCState>((set, get) => {
   })();
 
   let issueSeq = 0;
-  const mk = (title: string, priority: string, status: IssueStatus, sprintId: string | null, extra?: Partial<Issue>): Issue => {
+  const mk = (title: string, priority: IssuePriority, status: IssueStatus, sprintId: string | null, extra?: Partial<Issue>): Issue => {
     issueSeq += 1;
     const id = nextIssueId(issueSeq);
     const base = now();
