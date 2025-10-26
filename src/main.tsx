@@ -5,6 +5,7 @@ import App from './App'
 import Issues from './pages/Issues'
 import CurrentSprint from './pages/CurrentSprint'
 import Sprints from './pages/Sprints'
+import MyIssues from './pages/MyIssues'
 import Reports from './pages/Reports'
 import SprintPerformanceReport from './pages/reports/SprintPerformanceReport'
 import UserActivityReport from './pages/reports/UserActivityReport'
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
           { index: true, element: <Issues /> },
           { path: 'current', element: <CurrentSprint /> },
           { path: 'sprints', element: <Sprints /> },
+          { path: 'my-issues', element: <MyIssues /> },
           { 
             path: 'reports', 
             element: <Reports />,

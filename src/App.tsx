@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom"
-import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, BarChart2, PlusCircle, Sword, Shield, LogOut } from "lucide-react"
+import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, BarChart2, PlusCircle, Sword, Shield, LogOut, UserCircle } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useUI } from "./store/ui"
 import { useTheme } from "./store/theme"
@@ -16,8 +16,11 @@ export default function App() {
   const openSprint = useUI(s => s.openSprint)
   const { mode, toggle, setMode } = useTheme()
   const { user, signOut } = useAuth()
-  const { loadData, loading, error } = useFCStore()
+  const { loadData, loading, error, issues } = useFCStore()
   const [authOpen, setAuthOpen] = useState(false)
+
+  // Count user's assigned issues
+  const myIssuesCount = user ? issues.filter(i => i.assigneeId === user.id).length : 0
 
   // Load data when user is authenticated
   useEffect(() => {
@@ -54,6 +57,17 @@ export default function App() {
             <NavLink to="/" end><ListTodo className="w-4 h-4" /> Issues</NavLink>
             <NavLink to="/current"><PlayCircle className="w-4 h-4" /> Current Sprint</NavLink>
             <NavLink to="/sprints"><LayoutDashboard className="w-4 h-4" /> Sprints</NavLink>
+            <NavLink to="/my-issues" className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserCircle className="w-4 h-4" />
+                My Issues
+              </div>
+              {myIssuesCount > 0 && (
+                <span className="ml-auto text-xs bg-[var(--accent)] text-[var(--on-accent)] px-2 py-0.5 rounded-full">
+                  {myIssuesCount}
+                </span>
+              )}
+            </NavLink>
             <NavLink to="/reports"><BarChart2 className="w-4 h-4" /> Reports</NavLink>
           </nav>
           <div className="px-3 py-2 mt-4 space-y-1">
