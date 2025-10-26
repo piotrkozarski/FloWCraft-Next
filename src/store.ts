@@ -128,12 +128,26 @@ export const useFCStore = create<FCState>((set, get) => ({
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Generate ID
-      const { data: countData } = await supabase
-        .from('issues')
-        .select('id', { count: 'exact', head: true });
-      
-      const issueId = nextIssueId((countData?.length || 0) + 1);
+      // Generate unique ID
+      let issueId: string;
+      let attempts = 0;
+      do {
+        const { data: countData } = await supabase
+          .from('issues')
+          .select('id', { count: 'exact', head: true });
+        
+        issueId = nextIssueId((countData?.length || 0) + attempts + 1);
+        
+        // Check if ID already exists
+        const { data: existing } = await supabase
+          .from('issues')
+          .select('id')
+          .eq('id', issueId)
+          .single();
+        
+        if (!existing) break;
+        attempts++;
+      } while (attempts < 100); // Safety limit
       
       const issueData = {
         id: issueId,
@@ -148,13 +162,18 @@ export const useFCStore = create<FCState>((set, get) => ({
         created_by: user?.id
       };
 
+      console.log('Creating issue with data:', issueData);
+      
       const { data, error } = await supabase
         .from('issues')
         .insert(issueData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error details:', error);
+        throw error;
+      }
 
       const newIssue: Issue = {
         id: data.id,
@@ -282,12 +301,26 @@ export const useFCStore = create<FCState>((set, get) => ({
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Generate ID
-      const { data: countData } = await supabase
-        .from('sprints')
-        .select('id', { count: 'exact', head: true });
-      
-      const sprintId = nextSprintId((countData?.length || 0) + 1);
+      // Generate unique ID
+      let sprintId: string;
+      let attempts = 0;
+      do {
+        const { data: countData } = await supabase
+          .from('sprints')
+          .select('id', { count: 'exact', head: true });
+        
+        sprintId = nextSprintId((countData?.length || 0) + attempts + 1);
+        
+        // Check if ID already exists
+        const { data: existing } = await supabase
+          .from('sprints')
+          .select('id')
+          .eq('id', sprintId)
+          .single();
+        
+        if (!existing) break;
+        attempts++;
+      } while (attempts < 100); // Safety limit
       
       const sprintData = {
         id: sprintId,
