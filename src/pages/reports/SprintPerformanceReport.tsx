@@ -6,7 +6,9 @@ import { aggregateSprintIssues, sprintRangeLabel } from "@/utils/metrics"
 const STATUS_COLORS: Record<IssueStatus, string> = {
   "Todo": "bg-slate-600",
   "In Progress": "bg-blue-600",
+  "Ready For Review": "bg-orange-600",
   "In Review": "bg-purple-600",
+  "Ready To Test": "bg-indigo-600",
   "Done": "bg-emerald-600",
 }
 

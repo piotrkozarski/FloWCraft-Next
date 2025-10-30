@@ -2,7 +2,7 @@ import { useFCStore } from '../store'
 import type { Issue, IssueStatus } from '@/types'
 import type { IssuePriority } from '@/types'
 
-const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
+const statuses: IssueStatus[] = ['Todo','In Progress','Ready For Review','In Review','Ready To Test','Done']
 const priorities: IssuePriority[] = ['P0','P1','P2','P3','P4','P5']
 
 export default function IssueRow({ issue }: { issue: Issue }) {

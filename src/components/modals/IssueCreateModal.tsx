@@ -9,7 +9,7 @@ import type { Option } from "../ui/Select"
 import { fetchProfiles } from "../../services/users"
 
 const PRIORITIES: IssuePriority[] = ["P0","P1","P2","P3","P4","P5"]
-const STATUSES: IssueStatus[] = ["Todo","In Progress","In Review","Done"]
+const STATUSES: IssueStatus[] = ["Todo","In Progress","Ready For Review","In Review","Ready To Test","Done"]
 const TYPES: IssueType[] = ["Bug","Task","Feature","Story"]
 
 export default function IssueCreateModal() {

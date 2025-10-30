@@ -4,7 +4,7 @@ import type { IssueStatus } from '@/types'
 import type { IssuePriority } from '@/types'
 
 const priorities: IssuePriority[] = ['P0','P1','P2','P3','P4','P5']
-const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
+const statuses: IssueStatus[] = ['Todo','In Progress','Ready For Review','In Review','Ready To Test','Done']
 
 export default function IssueForm() {
   const createIssue = useFCStore(s => s.createIssue)
