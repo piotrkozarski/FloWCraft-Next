@@ -1,21 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const ALLOWED_ORIGINS = new Set<string>([
+const ALLOWED = [
   'https://flo-w-craft-next.vercel.app',
-  'http://localhost:5173', // vite dev
-  'http://localhost:3000', // alternative dev port
-  // Add Vercel preview URLs if needed
-  // 'https://flo-w-craft-next-git-*.vercel.app'
-])
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  // opcjonalnie Vercel preview (użyj dokładnych domen lub własnego matchera):
+  // 'https://flo-w-craft-next-git-main-<org>.vercel.app',
+]
 
 function corsHeaders(origin: string | null) {
-  const allowed = origin && ALLOWED_ORIGINS.has(origin) ? origin : 'https://flo-w-craft-next.vercel.app'
+  const allowed = origin && ALLOWED.includes(origin) ? origin : 'https://flo-w-craft-next.vercel.app'
   
   return {
     'Access-Control-Allow-Origin': allowed,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS, HEAD',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Max-Age': '86400',
     'Vary': 'Origin',
   }
 }
@@ -29,13 +30,11 @@ interface UpdateIssueStatusRequest {
 
 serve(async (req) => {
   const origin = req.headers.get('origin')
-  
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { 
-      status: 200, 
-      headers: corsHeaders(origin) 
-    })
+  const headers = { 'Content-Type': 'application/json', ...corsHeaders(origin) }
+
+  // Preflight + HEAD muszą ZAWSZE zwrócić 200
+  if (req.method === 'OPTIONS' || req.method === 'HEAD') {
+    return new Response('ok', { status: 200, headers })
   }
 
   try {
@@ -50,13 +49,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
-        { 
-          status: 401, 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders(origin)
-          } 
-        }
+        { status: 401, headers }
       )
     }
 
@@ -67,13 +60,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid or expired token' }),
-        { 
-          status: 401, 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders(origin)
-          } 
-        }
+        { status: 401, headers }
       )
     }
 
@@ -85,13 +72,7 @@ serve(async (req) => {
     if (!issueId || !toStatus) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: issueId, toStatus' }),
-        { 
-          status: 400, 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders(origin)
-          } 
-        }
+        { status: 400, headers }
       )
     }
 
@@ -100,13 +81,7 @@ serve(async (req) => {
     if (!validStatuses.includes(toStatus)) {
       return new Response(
         JSON.stringify({ error: 'Invalid status value' }),
-        { 
-          status: 400, 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders(origin)
-          } 
-        }
+        { status: 400, headers }
       )
     }
 
@@ -120,13 +95,7 @@ serve(async (req) => {
     if (issueError || !issue) {
       return new Response(
         JSON.stringify({ error: 'Issue not found' }),
-        { 
-          status: 404, 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders(origin)
-          } 
-        }
+        { status: 404, headers }
       )
     }
 
@@ -153,13 +122,7 @@ serve(async (req) => {
       console.error('Error updating issue:', updateError)
       return new Response(
         JSON.stringify({ error: 'Failed to update issue status' }),
-        { 
-          status: 500, 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders(origin)
-          } 
-        }
+        { status: 500, headers }
       )
     }
 
@@ -171,26 +134,14 @@ serve(async (req) => {
         ok: true, 
         issue: updatedIssue 
       }),
-      { 
-        status: 200, 
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders(origin)
-        } 
-      }
+      { status: 200, headers }
     )
 
   } catch (error) {
     console.error('Unexpected error:', error)
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders(origin)
-        } 
-      }
+      { status: 500, headers }
     )
   }
 })
