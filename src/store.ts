@@ -334,7 +334,16 @@ export const useFCStore = create<FCState>((set, get) => ({
       }));
 
     } catch (edgeFunctionError) {
-      console.warn('Edge Function not available, falling back to direct Supabase call:', edgeFunctionError);
+      // Check if it's a 404 error (function not deployed)
+      const isFunctionNotDeployed = edgeFunctionError?.message?.includes('404') || 
+                                   edgeFunctionError?.message?.includes('not found') ||
+                                   edgeFunctionError?.message?.includes('Failed to send a request');
+      
+      if (isFunctionNotDeployed) {
+        console.warn('Edge Function not deployed, falling back to direct Supabase call');
+      } else {
+        console.warn('Edge Function error, falling back to direct Supabase call:', edgeFunctionError);
+      }
       
       // Fallback to direct Supabase update
       try {
@@ -348,6 +357,23 @@ export const useFCStore = create<FCState>((set, get) => ({
 
         if (error) {
           console.error('Error updating issue status:', error);
+          
+          // Check if it's a constraint violation (invalid status)
+          const isConstraintError = error.message?.includes('check constraint') || 
+                                   error.message?.includes('invalid input value') ||
+                                   error.code === '23514';
+          
+          if (isConstraintError) {
+            console.error('Database constraint violation - status value not allowed:', status);
+            // Revert local state on error using original values
+            set(state => ({
+              issues: state.issues.map(issue =>
+                issue.id === id ? { ...issue, status: originalStatus, updatedAt: originalUpdatedAt } : issue
+              )
+            }));
+            throw new Error(`Status '${status}' is not allowed in the database. Please update the database schema to include the new status values.`);
+          }
+          
           // Revert local state on error using original values
           set(state => ({
             issues: state.issues.map(issue =>
