@@ -8,7 +8,7 @@ import { ArrowLeft, ArrowRight, Check, Trash2 } from 'lucide-react'
 import { nextStatus, prevStatus } from '../constants/status'
 import { fetchProfiles } from '../services/users'
 
-const STATUSES: IssueStatus[] = ['Todo','In Progress','In Review','Done']
+const STATUSES: IssueStatus[] = ['Todo','In Progress','Ready For Review','In Review','Ready To Test','Done']
 const PRIORITIES: IssuePriority[] = ['P0','P1','P2','P3','P4','P5']
 
 export default function IssueCard({ issue }: { issue: Issue }) {

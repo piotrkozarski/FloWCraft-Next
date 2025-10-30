@@ -11,7 +11,7 @@ import { fetchProfiles } from "../../services/users"
 
 const TYPES: IssueType[] = ["Bug","Task","Feature","Story"]
 const PRIORITIES: IssuePriority[] = ["P0","P1","P2","P3","P4","P5"]
-const STATUSES: IssueStatus[] = ["Todo","In Progress","In Review","Done"]
+const STATUSES: IssueStatus[] = ["Todo","In Progress","Ready For Review","In Review","Ready To Test","Done"]
 
 export default function IssueEditModal() {
   const { selectedIssueId, closeIssueDetail, openConfirm, closeConfirm, confirm } = useUI()
@@ -19,6 +19,7 @@ export default function IssueEditModal() {
   const update = useFCStore(s => s.updateIssue)
   const del = useFCStore(s => s.deleteIssue)
   const sprints = useFCStore(s => s.sprints)
+  const moveIssueStatus = useFCStore(s => s.moveIssueStatus)
 
   const issue = issues.find(i => i.id === selectedIssueId) || null
   
@@ -34,11 +35,86 @@ export default function IssueEditModal() {
   const [parent, setParent] = useState<Issue | null>(null)
   const [showParentOptions, setShowParentOptions] = useState(false)
   const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
+  const [isUpdating, setIsUpdating] = useState(false)
 
   // Load profiles on mount
   useEffect(() => {
     fetchProfiles().then(setProfiles)
   }, [])
+
+  // Status action definitions
+  const getStatusActions = (currentStatus: IssueStatus) => {
+    const actions = []
+    
+    switch (currentStatus) {
+      case 'Todo':
+        actions.push({
+          label: 'Start Working',
+          status: 'In Progress' as IssueStatus,
+          testId: 'btn-start-working',
+          disabled: false
+        })
+        break
+      case 'In Progress':
+        actions.push({
+          label: 'Finish Working',
+          status: 'Ready For Review' as IssueStatus,
+          testId: 'btn-finish-working',
+          disabled: false
+        })
+        break
+      case 'Ready For Review':
+        actions.push({
+          label: 'Start Review',
+          status: 'In Review' as IssueStatus,
+          testId: 'btn-start-review',
+          disabled: false
+        })
+        break
+      case 'In Review':
+        actions.push({
+          label: 'End Review',
+          status: 'Ready To Test' as IssueStatus,
+          testId: 'btn-end-review',
+          disabled: false
+        })
+        break
+      case 'Ready To Test':
+        actions.push({
+          label: 'Start Testing',
+          status: 'In Review' as IssueStatus, // Optional: can go back to review
+          testId: 'btn-start-testing',
+          disabled: false
+        })
+        actions.push({
+          label: 'Finish Testing',
+          status: 'Done' as IssueStatus,
+          testId: 'btn-finish-testing',
+          disabled: false
+        })
+        break
+      case 'Done':
+        // No actions for completed issues
+        break
+    }
+    
+    return actions
+  }
+
+  // Handle status action
+  const handleStatusAction = async (newStatus: IssueStatus) => {
+    if (!issue) return
+    
+    setIsUpdating(true)
+    try {
+      await moveIssueStatus(issue.id, newStatus)
+      setStatus(newStatus)
+    } catch (error) {
+      console.error('Failed to update status:', error)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   // Initialize form with issue data when issue changes
   useEffect(() => {
@@ -265,6 +341,29 @@ export default function IssueEditModal() {
               value={description}
               onChange={e=>setDescription(e.target.value)}
             />
+          </div>
+
+          {/* Status Actions */}
+          <div className="border-t border-[var(--border)] pt-4">
+            <label className="block text-sm mb-3 text-[var(--muted)]">Quick Actions</label>
+            <div className="flex flex-wrap gap-2">
+              {getStatusActions(status).map((action, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleStatusAction(action.status)}
+                  disabled={action.disabled || isUpdating}
+                  className={`px-3 py-2 text-sm rounded-md border transition-colors ${
+                    action.disabled || isUpdating
+                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                      : 'bg-[var(--accent)] text-[var(--background)] border-[var(--accent)] hover:opacity-80'
+                  }`}
+                  data-testid={action.testId}
+                >
+                  {isUpdating && action.status === status ? 'Saving...' : action.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Actions */}

@@ -1,15 +1,17 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { ClipboardList, Play, Eye, CheckCircle } from 'lucide-react'
+import { ClipboardList, Play, Eye, CheckCircle, Clock, TestTube } from 'lucide-react'
 import type { Issue, IssueStatus } from '@/types'
 
-const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
+const statuses: IssueStatus[] = ['Todo','In Progress','Ready For Review','In Review','Ready To Test','Done']
 
 const getStatusIcon = (status: IssueStatus) => {
   const icons: Record<IssueStatus, React.ReactNode> = {
     'Todo': <ClipboardList className="size-6" />,
     'In Progress': <Play className="size-6" />,
+    'Ready For Review': <Clock className="size-6" />,
     'In Review': <Eye className="size-6" />,
+    'Ready To Test': <TestTube className="size-6" />,
     'Done': <CheckCircle className="size-6" />
   }
   return icons[status]
@@ -28,7 +30,7 @@ export default function StatusCards({ issues }: StatusCardsProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
       {statuses.map((status, index) => {
         const count = getStatusCount(status)
         

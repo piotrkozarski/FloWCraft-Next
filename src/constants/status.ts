@@ -1,6 +1,6 @@
 import type { IssueStatus as Status } from '../types'
 
-export const STATUS_ORDER: Status[] = ['Todo','In Progress','In Review','Done']
+export const STATUS_ORDER: Status[] = ['Todo','In Progress','Ready For Review','In Review','Ready To Test','Done']
 
 export function nextStatus(s: Status): Status {
   const i = STATUS_ORDER.indexOf(s)

@@ -23,7 +23,7 @@ type FCState = {
   updateIssue(id: string, patch: Partial<Omit<Issue, 'id' | 'createdAt'>>): Promise<void>;
   deleteIssue(id: string): Promise<void>;
   updateIssueStatus(id: string, status: IssueStatus): Promise<void>;
-  moveIssueStatus(id: string, status: IssueStatus): Promise<void>;
+  moveIssueStatus(id: string, status: IssueStatus, newIndex?: number): Promise<void>;
 
   // Assignment
   assignIssueToSprint(id: string, sprintId: string | null): Promise<void>;
@@ -272,7 +272,7 @@ export const useFCStore = create<FCState>((set, get) => ({
     await updateIssue(id, { status });
   },
 
-  moveIssueStatus: async (id, status) => {
+  moveIssueStatus: async (id, status, newIndex = 0) => {
     // Store original status for potential rollback
     const originalIssue = get().issues.find(issue => issue.id === id);
     if (!originalIssue) {
@@ -288,28 +288,46 @@ export const useFCStore = create<FCState>((set, get) => ({
       )
     }));
 
-    // Update in database
+    // Update via Edge Function
     try {
-      const { error } = await supabase
-        .from('issues')
-        .update({ 
-          status, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error updating issue status:', error);
-        // Revert local state on error using original values
-        set(state => ({
-          issues: state.issues.map(issue =>
-            issue.id === id ? { ...issue, status: originalStatus, updatedAt: originalUpdatedAt } : issue
-          )
-        }));
-        throw error;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session');
       }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_issue_status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          issueId: id,
+          toStatus: status,
+          sprintId: originalIssue.sprintId,
+          newIndex
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update issue status');
+      }
+
+      const result = await response.json();
+      if (!result.ok) {
+        throw new Error('Edge function returned error');
+      }
+
+      // Update local state with the returned issue data
+      set(state => ({
+        issues: state.issues.map(issue =>
+          issue.id === id ? { ...issue, ...result.issue } : issue
+        )
+      }));
+
     } catch (error) {
-      console.error('Failed to update issue status in database:', error);
+      console.error('Failed to update issue status via Edge Function:', error);
       // Revert local state on error using original values
       set(state => ({
         issues: state.issues.map(issue =>

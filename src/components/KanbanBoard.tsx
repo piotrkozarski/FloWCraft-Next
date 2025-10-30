@@ -18,7 +18,7 @@ import { STATUS_MAP, STATUS_TO_ID, getStatusIcon } from '../utils/status'
 import { applyFilters, hasActiveFilters, clearFilters } from '../utils/filters'
 import { getDropColumnId, getDropIndex } from '../utils/dnd-utils'
 
-const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
+const statuses: IssueStatus[] = ['Todo','In Progress','Ready For Review','In Review','Ready To Test','Done']
 
 // Droppable Column Component
 function DroppableColumn({ 
@@ -235,7 +235,9 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
   const columns: Record<IssueStatus, Issue[]> = useMemo(() => ({
     "Todo": filteredIssues.filter(i => i.status === "Todo"),
     "In Progress": filteredIssues.filter(i => i.status === "In Progress"),
+    "Ready For Review": filteredIssues.filter(i => i.status === "Ready For Review"),
     "In Review": filteredIssues.filter(i => i.status === "In Review"),
+    "Ready To Test": filteredIssues.filter(i => i.status === "Ready To Test"),
     "Done": filteredIssues.filter(i => i.status === "Done"),
   }), [filteredIssues])
 
@@ -314,7 +316,7 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
       logEvent({ t: "dnd_move", from: issue.status, to: newStatus, at: Date.now() })
       
       // Move issue
-      await moveIssueStatus(issueId, newStatus)
+      await moveIssueStatus(issueId, newStatus, newIndex)
       
       // Clear optimistic state on success
       setDragging(null)
@@ -396,7 +398,7 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
           {(Object.keys(columns) as IssueStatus[]).map((status, index) => {
             const statusIssues = columns[status]
             
