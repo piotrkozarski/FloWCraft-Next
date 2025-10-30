@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import type { Toast } from "../utils/toast"
 
 type UIState = {
   newIssueOpen: boolean
@@ -6,6 +7,7 @@ type UIState = {
   selectedIssueId: string | null
   editSprintId: string | null
   confirm: { open: boolean; title?: string; message?: string; onConfirm?: (() => void) | null }
+  toasts: Toast[]
 
   openIssue: () => void
   closeIssue: () => void
@@ -20,6 +22,10 @@ type UIState = {
 
   openConfirm: (args: { title: string; message?: string; onConfirm: () => void }) => void
   closeConfirm: () => void
+
+  showToast: (toast: Toast) => void
+  hideToast: (id: string) => void
+  clearToasts: () => void
 }
 
 export const useUI = create<UIState>((set) => ({
@@ -28,6 +34,7 @@ export const useUI = create<UIState>((set) => ({
   selectedIssueId: null,
   editSprintId: null,
   confirm: { open: false, title: '', message: '', onConfirm: null },
+  toasts: [],
 
   openIssue: () => set({ newIssueOpen: true }),
   closeIssue: () => set({ newIssueOpen: false }),
@@ -42,4 +49,12 @@ export const useUI = create<UIState>((set) => ({
 
   openConfirm: (args) => set({ confirm: { open: true, ...args } }),
   closeConfirm: () => set({ confirm: { open: false, onConfirm: null } }),
+
+  showToast: (toast) => set(state => ({ 
+    toasts: [...state.toasts, toast] 
+  })),
+  hideToast: (id) => set(state => ({ 
+    toasts: state.toasts.filter(t => t.id !== id) 
+  })),
+  clearToasts: () => set({ toasts: [] }),
 }))

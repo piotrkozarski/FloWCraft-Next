@@ -288,36 +288,43 @@ export const useFCStore = create<FCState>((set, get) => ({
       )
     }));
 
-    // Try Edge Function first, fall back to direct Supabase call
+    // Retry logic for network errors
+    const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 1, delay = 300) => {
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          return await fn();
+        } catch (error) {
+          if (attempt === maxRetries) throw error;
+          
+          // Only retry on network errors
+          if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            console.log(`Retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          throw error;
+        }
+      }
+    };
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No active session');
-      }
+      // Try Edge Function with retry logic
+      const result = await retryWithBackoff(async () => {
+        const { data, error } = await supabase.functions.invoke('update_issue_status', {
+          body: { 
+            issueId: id, 
+            toStatus: status, 
+            sprintId: originalIssue.sprintId, 
+            newIndex 
+          },
+        });
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update_issue_status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          issueId: id,
-          toStatus: status,
-          sprintId: originalIssue.sprintId,
-          newIndex
-        })
+        if (error || !data?.ok) {
+          throw error ?? new Error('Edge function failed');
+        }
+
+        return data;
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update issue status');
-      }
-
-      const result = await response.json();
-      if (!result.ok) {
-        throw new Error('Edge function returned error');
-      }
 
       // Update local state with the returned issue data
       set(state => ({

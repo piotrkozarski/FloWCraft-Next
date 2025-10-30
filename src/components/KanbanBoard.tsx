@@ -8,6 +8,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
+import { useUI } from '../store/ui'
 import type { Issue, IssueStatus } from '@/types'
 import Badge from './ui/Badge'
 import Avatar from './ui/Avatar'
@@ -17,6 +18,7 @@ import { useDebounce } from '../utils/debounce'
 import { STATUS_MAP, STATUS_TO_ID, getStatusIcon } from '../utils/status'
 import { applyFilters, hasActiveFilters, clearFilters } from '../utils/filters'
 import { getDropColumnId, getDropIndex } from '../utils/dnd-utils'
+import { showError, showSuccess } from '../utils/toast'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','Ready For Review','In Review','Ready To Test','Done']
 
@@ -158,6 +160,7 @@ interface KanbanBoardProps {
 const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
   const moveIssueStatus = useFCStore(s => s.moveIssueStatus)
   const sprints = useFCStore(s => s.sprints)
+  const showToast = useUI(s => s.showToast)
   
   const [searchParams, setSearchParams] = useSearchParams()
   
@@ -320,12 +323,25 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
       
       // Clear optimistic state on success
       setDragging(null)
+      
+      // Show success toast
+      showToast(showSuccess(
+        'Issue moved successfully',
+        `Moved to ${newStatus}`
+      ))
     } catch (error) {
       console.error('Failed to move issue:', error)
       // Clear optimistic state on error (the store will handle rollback)
       setDragging(null)
+      
+      // Show error toast
+      const errorMessage = error instanceof Error ? error.message : 'Failed to move issue'
+      showToast(showError(
+        'Failed to move issue',
+        errorMessage
+      ))
     }
-  }, [filteredIssues, moveIssueStatus, columns])
+  }, [filteredIssues, moveIssueStatus, columns, showToast])
 
   return (
     <div className="card p-6" data-testid="kanban-board">

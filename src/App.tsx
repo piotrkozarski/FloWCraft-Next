@@ -10,10 +10,13 @@ import IssueCreateModal from "./components/modals/IssueCreateModal"
 import SprintCreateModal from "./components/modals/SprintCreateModal"
 import SprintEditModal from "./components/modals/SprintEditModal"
 import IssueEditModal from "./components/modals/IssueEditModal"
+import { ToastContainer } from "./components/ui/Toast"
 
 export default function App() {
   const openIssue = useUI(s => s.openIssue)
   const openSprint = useUI(s => s.openSprint)
+  const toasts = useUI(s => s.toasts)
+  const hideToast = useUI(s => s.hideToast)
   const { mode, toggle, setMode } = useTheme()
   const { user, signOut } = useAuth()
   const { loadData, loading, error, issues } = useFCStore()
@@ -186,6 +189,7 @@ export default function App() {
       <SprintEditModal />
       <IssueEditModal />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <ToastContainer toasts={toasts} onClose={hideToast} />
     </div>
   )
 }
