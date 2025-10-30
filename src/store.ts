@@ -164,7 +164,9 @@ export const useFCStore = create<FCState>((set, get) => ({
         assignee_id: input.assigneeId,
         parent_id: input.parentId,
         description: input.description,
-        created_by: user?.id
+        created_by: user?.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       console.log('Creating issue with data:', issueData);

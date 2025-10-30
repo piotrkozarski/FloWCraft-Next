@@ -36,7 +36,16 @@ export default function IssueCreateModal() {
 
   // Load profiles on mount
   useEffect(() => {
-    fetchProfiles().then(setProfiles)
+    console.log('Loading profiles...');
+    fetchProfiles()
+      .then(profiles => {
+        console.log('Profiles loaded:', profiles);
+        setProfiles(profiles);
+      })
+      .catch(error => {
+        console.error('Error loading profiles:', error);
+        setProfiles([]);
+      });
   }, [])
 
   // reset na otwarciu
