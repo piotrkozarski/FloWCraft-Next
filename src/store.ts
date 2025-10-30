@@ -304,7 +304,18 @@ export const useFCStore = create<FCState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      console.log('User authentication status:', { user: user?.id, userError });
+      
+      if (userError) {
+        console.error('Error getting user:', userError);
+        throw new Error('Authentication error: ' + userError.message);
+      }
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       
       // Generate unique ID
       let sprintId: string;
@@ -332,14 +343,39 @@ export const useFCStore = create<FCState>((set, get) => ({
         attempts++;
       } while (attempts < 100); // Safety limit
       
+      // Check if profiles table exists and create profile if needed
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (profileError) {
+        console.warn('Profiles table might not exist or user profile not found:', profileError);
+        // Try to create profile
+        const { error: createProfileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            username: user.email?.split('@')[0] || 'user'
+          });
+        
+        if (createProfileError) {
+          console.warn('Could not create profile:', createProfileError);
+        }
+      }
+
       const sprintData = {
         id: sprintId,
         name: input.name,
         status: input.status,
         start_date: input.startDate,
         end_date: input.endDate,
-        created_by: user?.id
+        created_by: user.id
       };
+
+      console.log('Attempting to insert sprint data:', sprintData);
 
       const { data, error } = await supabase
         .from('sprints')
@@ -347,7 +383,10 @@ export const useFCStore = create<FCState>((set, get) => ({
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
 
       const newSprint: Sprint = {
         id: data.id,
