@@ -50,7 +50,7 @@ function DraggableCard({ issue, mapName }: { issue: Issue; mapName: (id?: string
         <div className="text-xs font-mono px-2 py-1 rounded bg-[var(--panel)] text-[var(--muted)]">
           {issue.id}
         </div>
-        <Badge className={`priority-${issue.priority.toLowerCase()}`}>
+        <Badge className={`priority ${issue.priority}`}>
           {issue.priority}
         </Badge>
       </div>
@@ -212,18 +212,30 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
               value={filters.title}
               onChange={(e) => updateFilters({ title: e.target.value })}
               className="input"
+              list="title-suggestions"
             />
+            <datalist id="title-suggestions">
+              {filteredIssues.map(issue => (
+                <option key={issue.id} value={issue.title} />
+              ))}
+            </datalist>
             <input
               type="text"
               placeholder="Filter assignee..."
               value={filters.assigneeId}
               onChange={(e) => updateFilters({ assigneeId: e.target.value })}
               className="input"
+              list="assignee-suggestions"
             />
+            <datalist id="assignee-suggestions">
+              {profiles.map(profile => (
+                <option key={profile.id} value={profile.username || profile.email || 'Unassigned'} />
+              ))}
+            </datalist>
             <select
               value={filters.priority}
               onChange={(e) => updateFilters({ priority: e.target.value })}
-              className="input"
+              className="input theme-select"
             >
               <option value="">All Priorities</option>
               <option value="P0">P0</option>
@@ -276,28 +288,6 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
                   </div>
                 </div>
 
-                {/* Sprint Progress Bar (if active sprint) */}
-                {activeSprint && status === "Todo" && (
-                  <div className="mb-4 p-3 bg-[var(--background)] rounded-lg border border-[var(--border)]">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-[var(--text)]">Sprint Progress</span>
-                      <span className="text-xs text-[var(--muted)]">{donePct}%</span>
-                    </div>
-                    <div className="w-full bg-[var(--panel)] rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          donePct >= 80 ? 'bg-green-500' : donePct >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}
-                        style={{ width: `${Math.min(donePct, 100)}%` }}
-                      />
-                    </div>
-                    {donePct < 80 && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--panel)]/70 mt-1 inline-block text-[var(--muted)]">
-                        target ≥ 80%
-                      </span>
-                    )}
-                  </div>
-                )}
 
                 {/* Issues */}
                 <SortableContext items={statusIssues.map(i => i.id)}>
