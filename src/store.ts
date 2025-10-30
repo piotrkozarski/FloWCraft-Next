@@ -333,11 +333,12 @@ export const useFCStore = create<FCState>((set, get) => ({
         )
       }));
 
-    } catch (edgeFunctionError) {
-      // Check if it's a 404 error (function not deployed)
-      const isFunctionNotDeployed = edgeFunctionError?.message?.includes('404') || 
-                                   edgeFunctionError?.message?.includes('not found') ||
-                                   edgeFunctionError?.message?.includes('Failed to send a request');
+     } catch (edgeFunctionError) {
+       // Check if it's a 404 error (function not deployed)
+       const errorMessage = edgeFunctionError instanceof Error ? edgeFunctionError.message : String(edgeFunctionError);
+       const isFunctionNotDeployed = errorMessage.includes('404') || 
+                                    errorMessage.includes('not found') ||
+                                    errorMessage.includes('Failed to send a request');
       
       if (isFunctionNotDeployed) {
         console.warn('Edge Function not deployed, falling back to direct Supabase call');
@@ -358,10 +359,12 @@ export const useFCStore = create<FCState>((set, get) => ({
         if (error) {
           console.error('Error updating issue status:', error);
           
-          // Check if it's a constraint violation (invalid status)
-          const isConstraintError = error.message?.includes('check constraint') || 
-                                   error.message?.includes('invalid input value') ||
-                                   error.code === '23514';
+           // Check if it's a constraint violation (invalid status)
+           const errorMessage = error.message || '';
+           const errorCode = (error as any).code;
+           const isConstraintError = errorMessage.includes('check constraint') || 
+                                    errorMessage.includes('invalid input value') ||
+                                    errorCode === '23514';
           
           if (isConstraintError) {
             console.error('Database constraint violation - status value not allowed:', status);
