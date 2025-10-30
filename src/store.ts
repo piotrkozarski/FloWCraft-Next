@@ -288,7 +288,7 @@ export const useFCStore = create<FCState>((set, get) => ({
       )
     }));
 
-    // Update via Edge Function
+    // Try Edge Function first, fall back to direct Supabase call
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -326,15 +326,47 @@ export const useFCStore = create<FCState>((set, get) => ({
         )
       }));
 
-    } catch (error) {
-      console.error('Failed to update issue status via Edge Function:', error);
-      // Revert local state on error using original values
-      set(state => ({
-        issues: state.issues.map(issue =>
-          issue.id === id ? { ...issue, status: originalStatus, updatedAt: originalUpdatedAt } : issue
-        )
-      }));
-      throw error;
+    } catch (edgeFunctionError) {
+      console.warn('Edge Function not available, falling back to direct Supabase call:', edgeFunctionError);
+      
+      // Fallback to direct Supabase update
+      try {
+        const { error } = await supabase
+          .from('issues')
+          .update({ 
+            status, 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', id);
+
+        if (error) {
+          console.error('Error updating issue status:', error);
+          // Revert local state on error using original values
+          set(state => ({
+            issues: state.issues.map(issue =>
+              issue.id === id ? { ...issue, status: originalStatus, updatedAt: originalUpdatedAt } : issue
+            )
+          }));
+          throw error;
+        }
+
+        // Update local state with the new status
+        set(state => ({
+          issues: state.issues.map(issue =>
+            issue.id === id ? { ...issue, status, updatedAt: new Date().toISOString() } : issue
+          )
+        }));
+
+      } catch (directUpdateError) {
+        console.error('Failed to update issue status via direct Supabase call:', directUpdateError);
+        // Revert local state on error using original values
+        set(state => ({
+          issues: state.issues.map(issue =>
+            issue.id === id ? { ...issue, status: originalStatus, updatedAt: originalUpdatedAt } : issue
+          )
+        }));
+        throw directUpdateError;
+      }
     }
   },
 
