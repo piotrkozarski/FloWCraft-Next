@@ -147,7 +147,7 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
     setActiveId(event.active.id as string)
   }
 
-  function onDragEnd(event: DragEndEvent) {
+  async function onDragEnd(event: DragEndEvent) {
     const { active, over } = event
     setActiveId(null)
 
@@ -161,8 +161,12 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
       const issue = filteredIssues.find(i => i.id === issueId)
       if (issue) {
         logEvent({ t: "dnd_move", from: issue.status, to: overCol, at: Date.now() })
+        try {
+          await moveIssueStatus(issueId, overCol)
+        } catch (error) {
+          console.error('Failed to move issue:', error)
+        }
       }
-      moveIssueStatus(issueId, overCol)
     }
   }
 

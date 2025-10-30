@@ -23,7 +23,7 @@ type FCState = {
   updateIssue(id: string, patch: Partial<Omit<Issue, 'id' | 'createdAt'>>): Promise<void>;
   deleteIssue(id: string): Promise<void>;
   updateIssueStatus(id: string, status: IssueStatus): Promise<void>;
-  moveIssueStatus(id: string, status: IssueStatus): void;
+  moveIssueStatus(id: string, status: IssueStatus): Promise<void>;
 
   // Assignment
   assignIssueToSprint(id: string, sprintId: string | null): Promise<void>;
@@ -272,12 +272,38 @@ export const useFCStore = create<FCState>((set, get) => ({
     await updateIssue(id, { status });
   },
 
-  moveIssueStatus: (id, status) => {
+  moveIssueStatus: async (id, status) => {
+    // Update local state immediately for responsive UI
     set(state => ({
       issues: state.issues.map(issue =>
         issue.id === id ? { ...issue, status, updatedAt: new Date().toISOString() } : issue
       )
     }));
+
+    // Update in database
+    try {
+      const { error } = await supabase
+        .from('issues')
+        .update({ 
+          status, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating issue status:', error);
+        // Revert local state on error
+        set(state => ({
+          issues: state.issues.map(issue =>
+            issue.id === id ? { ...issue, status: issue.status, updatedAt: issue.updatedAt } : issue
+          )
+        }));
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to update issue status in database:', error);
+      throw error;
+    }
   },
 
   assignIssueToSprint: async (id, sprintId) => {
