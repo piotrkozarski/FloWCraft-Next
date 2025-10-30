@@ -54,6 +54,47 @@ test.describe('Current Sprint Drag & Drop', () => {
     await expect(inProgressColumnAfterReload.locator('[data-testid^="issue-"]')).toContainText(await issue.textContent());
   });
 
+  test('drag and drop works when dropping on items in target column', async ({ page }) => {
+    // Navigate to Current Sprint
+    await page.click('a[href="/current"]');
+    await page.waitForURL('/current');
+    
+    // Wait for the page to load
+    await page.waitForSelector('[data-testid="kanban-board"]');
+    
+    // Find an issue in the Todo column
+    const todoColumn = page.locator('[data-testid="column-TODO"]');
+    const sourceIssue = todoColumn.locator('[data-testid^="issue-"]').first();
+    
+    // Verify source issue is in Todo column
+    await expect(sourceIssue).toBeVisible();
+    
+    // Find the In Progress column and get an existing issue in it
+    const inProgressColumn = page.locator('[data-testid="column-IN_PROGRESS"]');
+    const targetIssue = inProgressColumn.locator('[data-testid^="issue-"]').first();
+    
+    // If there's an issue in In Progress column, drag over it
+    if (await targetIssue.isVisible()) {
+      // Drag source issue over the target issue in In Progress column
+      await sourceIssue.dragTo(targetIssue);
+    } else {
+      // If no issues in In Progress, drag to empty space
+      await sourceIssue.dragTo(inProgressColumn);
+    }
+    
+    // Wait for "Saving..." indicator to appear and disappear
+    const savingIndicator = page.locator('[data-testid="saving-badge"]');
+    await expect(savingIndicator).toBeVisible();
+    await expect(savingIndicator).toBeHidden({ timeout: 5000 });
+    
+    // Verify source issue moved to In Progress column
+    await expect(inProgressColumn.locator('[data-testid^="issue-"]')).toContainText(await sourceIssue.textContent());
+    
+    // Verify the issue count in In Progress column increased
+    const inProgressCount = inProgressColumn.locator('[data-testid="column-count"]');
+    await expect(inProgressCount).toContainText(await inProgressColumn.locator('[data-testid^="issue-"]').count().toString());
+  });
+
   test('filters work correctly', async ({ page }) => {
     // Navigate to Current Sprint
     await page.click('a[href="/current"]');

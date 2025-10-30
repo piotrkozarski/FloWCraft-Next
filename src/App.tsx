@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom"
+import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { ClipboardList, LayoutDashboard, ListTodo, PlayCircle, BarChart2, PlusCircle, Sword, Shield, LogOut, UserCircle } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useUI } from "./store/ui"
@@ -21,6 +21,17 @@ export default function App() {
 
   // Count user's assigned issues
   const myIssuesCount = user ? issues.filter(i => i.assigneeId === user.id).length : 0
+
+  const getPageTitle = () => {
+    const path = location.pathname
+    if (path === '/' || path === '/dashboard') return 'Dashboard'
+    if (path === '/issues') return 'All Issues'
+    if (path === '/current') return 'Current Sprint'
+    if (path === '/sprints') return 'Sprints'
+    if (path === '/my-issues') return 'My Issues'
+    if (path.startsWith('/reports')) return 'Reports'
+    return 'FlowCraft'
+  }
 
   // Load data when user is authenticated
   useEffect(() => {
@@ -127,7 +138,7 @@ export default function App() {
 
       <div className="page">
         <div className="page-header">
-          <h1>All Issues</h1>
+          <h1>{getPageTitle()}</h1>
           <div className="flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-2">

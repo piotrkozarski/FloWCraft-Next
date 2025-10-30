@@ -16,6 +16,7 @@ import { logEvent } from '../utils/telemetry'
 import { useDebounce } from '../utils/debounce'
 import { STATUS_MAP, STATUS_TO_ID, getStatusIcon } from '../utils/status'
 import { applyFilters, hasActiveFilters, clearFilters } from '../utils/filters'
+import { getDropColumnId, getDropIndex } from '../utils/dnd-utils'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
@@ -34,7 +35,7 @@ function DroppableColumn({
   const columnId = STATUS_TO_ID[status]
   const { setNodeRef: setDropRef, isOver } = useDroppable({ 
     id: columnId, 
-    data: { status: columnId } 
+    data: { type: 'column', status: columnId } 
   })
 
   const isActive = Boolean(isOver)
@@ -64,12 +65,14 @@ function DroppableColumn({
       {/* Issues */}
       <SortableContext items={issues.map(i => i.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-3">
-          {issues.map((issue) => (
+          {issues.map((issue, index) => (
             <DraggableCard 
               key={issue.id} 
               issue={issue} 
               mapName={mapName} 
               saving={dragging?.id === issue.id && dragging?.saving}
+              columnId={columnId}
+              index={index}
             />
           ))}
         </div>
@@ -79,8 +82,11 @@ function DroppableColumn({
 }
 
 // Draggable Card Component
-function DraggableCard({ issue, mapName, saving = false }: { issue: Issue; mapName: (id?: string | null) => string; saving?: boolean }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: issue.id })
+function DraggableCard({ issue, mapName, saving = false, columnId, index }: { issue: Issue; mapName: (id?: string | null) => string; saving?: boolean; columnId: string; index: number }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
+    id: issue.id,
+    data: { type: 'item', columnId, index }
+  })
   
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -245,10 +251,10 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
       return
     }
 
-    // Check if over a column
-    const overColumnId = over.data.current?.status
-    if (overColumnId && overColumnId in STATUS_MAP) {
-      setOverColumn(overColumnId)
+    // Get the target column ID using the utility function
+    const targetColumnId = getDropColumnId(over)
+    if (targetColumnId && targetColumnId in STATUS_MAP) {
+      setOverColumn(targetColumnId)
     } else {
       setOverColumn(null)
     }
@@ -265,21 +271,22 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
     }
 
     const issueId = active.id as string
-    const overColumnId = over.data.current?.status
+    const targetColumnId = getDropColumnId(over)
     
     // Debug logging
     if (import.meta.env.DEV) {
       console.log('Drag end:', { 
         activeId: active.id, 
         overId: over.id, 
-        overData: over.data.current 
+        overData: over.data.current,
+        targetColumnId
       })
     }
 
     // Check if dropped on a valid status column
-    const newStatus = overColumnId ? STATUS_MAP[overColumnId] : null
+    const newStatus = targetColumnId ? STATUS_MAP[targetColumnId] : null
     if (!newStatus) {
-      console.log('Invalid drop target:', overColumnId)
+      console.log('Invalid drop target:', targetColumnId)
       return
     }
 
@@ -294,6 +301,10 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
       console.log('Already in same status - no change needed')
       return
     }
+
+    // Calculate target index for insertion
+    const targetColumnIssues = columns[newStatus] || []
+    const newIndex = getDropIndex(over, targetColumnIssues)
 
     // Set optimistic UI state
     setDragging({ id: issueId, saving: true })
@@ -312,7 +323,7 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
       // Clear optimistic state on error (the store will handle rollback)
       setDragging(null)
     }
-  }, [filteredIssues, moveIssueStatus])
+  }, [filteredIssues, moveIssueStatus, columns])
 
   return (
     <div className="card p-6" data-testid="kanban-board">
@@ -425,6 +436,8 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
                 issue={filteredIssues.find(i => i.id === activeId)!} 
                 mapName={mapName}
                 saving={false}
+                columnId="TODO" // Default for overlay
+                index={0} // Default for overlay
               />
             </div>
           ) : null}
