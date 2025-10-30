@@ -343,16 +343,16 @@ export const useFCStore = create<FCState>((set, get) => ({
         attempts++;
       } while (attempts < 100); // Safety limit
       
-      // Check if profiles table exists and create profile if needed
+      // Check if profile exists and create if needed
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', user.id)
         .maybeSingle();
       
-      if (profileError) {
-        console.warn('Profiles table might not exist or user profile not found:', profileError);
-        // Try to create profile
+      if (profileError || !profile) {
+        console.log('Profile not found, creating new profile for user:', user.id);
+        // Create profile
         const { error: createProfileError } = await supabase
           .from('profiles')
           .insert({
@@ -362,8 +362,12 @@ export const useFCStore = create<FCState>((set, get) => ({
           });
         
         if (createProfileError) {
-          console.warn('Could not create profile:', createProfileError);
+          console.error('Could not create profile:', createProfileError);
+          throw new Error('Failed to create user profile: ' + createProfileError.message);
         }
+        console.log('Profile created successfully');
+      } else {
+        console.log('Profile found for user:', user.id);
       }
 
       const sprintData = {

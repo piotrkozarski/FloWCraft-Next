@@ -280,7 +280,43 @@ export const useFCStore = create<FCState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('Error getting user:', userError);
+        throw new Error('Authentication error: ' + userError.message);
+      }
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Check if profile exists and create if needed
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (profileError || !profile) {
+        console.log('Profile not found, creating new profile for user:', user.id);
+        // Create profile
+        const { error: createProfileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            username: user.email?.split('@')[0] || 'user'
+          });
+        
+        if (createProfileError) {
+          console.error('Could not create profile:', createProfileError);
+          throw new Error('Failed to create user profile: ' + createProfileError.message);
+        }
+        console.log('Profile created successfully');
+      } else {
+        console.log('Profile found for user:', user.id);
+      }
       
       // Generate ID
       const { data: countData } = await supabase
