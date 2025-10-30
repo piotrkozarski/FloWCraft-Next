@@ -28,7 +28,7 @@ export default function BulkAssignModal({ open, onClose }: { open: boolean, onCl
           Select issues and assign them to a sprint or backlog.
         </div>
 
-        <div className="border border-[#E6E0E9] rounded-lg divide-y max-h-[300px] overflow-y-auto mb-4">
+        <div className="border border-[var(--border)] rounded-lg divide-y max-h-[300px] overflow-y-auto mb-4">
           {issues.map(i => (
             <label key={i.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-slate-50">
               <input
@@ -60,11 +60,11 @@ export default function BulkAssignModal({ open, onClose }: { open: boolean, onCl
         </div>
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-3 py-2 rounded-full border border-[#E6E0E9] bg-white hover:bg-slate-50">Cancel</button>
+          <button onClick={onClose} className="px-3 py-2 rounded-full border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--panel)]">Cancel</button>
           <button
             disabled={selectedIds.length === 0}
             onClick={apply}
-            className="px-4 py-2 rounded-full bg-[#6750A4] text-white disabled:opacity-40 hover:brightness-95"
+            className="px-4 py-2 rounded-full bg-[var(--accent)] text-[var(--background)] disabled:opacity-40 hover:brightness-95"
           >
             Assign ({selectedIds.length})
           </button>

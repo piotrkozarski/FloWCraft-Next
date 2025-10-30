@@ -1,15 +1,16 @@
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { Calendar, Play, CheckCircle } from 'lucide-react'
 import { useFCStore } from '../store'
 import type { Sprint, SprintStatus } from '@/types'
 
 const statuses: SprintStatus[] = ['Planned', 'Active', 'Completed']
 
 const getStatusIcon = (status: SprintStatus) => {
-  const icons = {
-    'Planned': '📅',
-    'Active': '🏃',
-    'Completed': '✅'
+  const icons: Record<SprintStatus, React.ReactNode> = {
+    'Planned': <Calendar className="size-4" />,
+    'Active': <Play className="size-4" />,
+    'Completed': <CheckCircle className="size-4" />
   }
   return icons[status]
 }

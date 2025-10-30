@@ -2,6 +2,7 @@ import { useFCStore } from "../store"
 import { useUI } from "../store/ui"
 import { useMemo } from "react"
 import KanbanBoard from "../components/KanbanBoard"
+import { calcProgress } from "../utils/sprint"
 
 export default function CurrentSprint() {
   const sprint = useFCStore(s => s.getActiveSprint())
@@ -11,11 +12,7 @@ export default function CurrentSprint() {
   const inSprint = useMemo(() => issues.filter(i => i.sprintId === sprint?.id), [issues, sprint])
   
   // Calculate sprint progress
-  const sprintProgress = useMemo(() => {
-    if (!inSprint.length) return 0
-    const doneCount = inSprint.filter(i => i.status === 'Done').length
-    return Math.round((doneCount / inSprint.length) * 100)
-  }, [inSprint])
+  const sprintProgress = useMemo(() => calcProgress(inSprint), [inSprint])
 
   if (!sprint) return <div className="text-gray-400">No active sprint.</div>
 
@@ -51,6 +48,8 @@ export default function CurrentSprint() {
           <div 
             className="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300 ease-out"
             style={{ width: `${sprintProgress}%` }}
+            data-testid="sprint-progress"
+            data-progress={sprintProgress}
           />
         </div>
         <div className="flex justify-between items-center mt-2">

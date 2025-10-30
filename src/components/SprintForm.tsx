@@ -76,7 +76,7 @@ export default function SprintForm() {
         
         <div className="flex justify-end">
           <button 
-            className="bg-[#6750A4] text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-95 shadow-sm disabled:opacity-50" 
+            className="bg-[var(--accent)] text-[var(--background)] px-4 py-2 rounded-full text-sm font-semibold hover:brightness-95 shadow-sm disabled:opacity-50" 
             type="submit"
             disabled={!name || !startDate || !endDate}
           >

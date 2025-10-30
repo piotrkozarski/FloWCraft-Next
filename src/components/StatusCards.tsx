@@ -1,14 +1,16 @@
+import React from 'react'
 import { motion } from 'framer-motion'
+import { ClipboardList, Play, Eye, CheckCircle } from 'lucide-react'
 import type { Issue, IssueStatus } from '@/types'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
 const getStatusIcon = (status: IssueStatus) => {
-  const icons: Record<IssueStatus, string> = {
-    'Todo': 'assignment',
-    'In Progress': 'play_arrow',
-    'In Review': 'visibility',
-    'Done': 'check_circle'
+  const icons: Record<IssueStatus, React.ReactNode> = {
+    'Todo': <ClipboardList className="size-6" />,
+    'In Progress': <Play className="size-6" />,
+    'In Review': <Eye className="size-6" />,
+    'Done': <CheckCircle className="size-6" />
   }
   return icons[status]
 }
@@ -36,18 +38,18 @@ export default function StatusCards({ issues }: StatusCardsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white rounded-2xl shadow-sm border border-[#E6E0E9] p-4 hover:shadow-md transition-shadow"
+            className="bg-[var(--background)] rounded-2xl shadow-sm border border-[var(--border)] p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <div className="text-3xl font-bold mb-1 text-[#21005E]">{count}</div>
-                <div className="text-sm font-medium uppercase tracking-wide text-slate-600">{status}</div>
-                <div className="text-xs mt-1 text-slate-500">
+                <div className="text-3xl font-bold mb-1 text-[var(--text)]">{count}</div>
+                <div className="text-sm font-medium uppercase tracking-wide text-[var(--muted)]">{status}</div>
+                <div className="text-xs mt-1 text-[var(--muted)]">
                   {count === 1 ? 'issue' : 'issues'}
                 </div>
               </div>
               <div className="ml-4">
-                <span className="text-2xl text-slate-400">
+                <span className="text-2xl text-[var(--muted)]">
                   {getStatusIcon(status)}
                 </span>
               </div>

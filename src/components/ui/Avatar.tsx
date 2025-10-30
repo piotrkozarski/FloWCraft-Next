@@ -7,7 +7,7 @@ function initials(name?: string) {
 }
 export default function Avatar({ name }: { name?: string }) {
   return (
-    <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#EADDFF] text-[#21005E] text-[11px] font-bold">
+    <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--background)] text-[11px] font-bold">
       {initials(name)}
     </div>
   )

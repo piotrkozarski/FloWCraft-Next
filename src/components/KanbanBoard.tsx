@@ -1,7 +1,10 @@
 import { useState, useEffect, useMemo, useCallback, memo } from 'react'
-import { DndContext, DragOverlay } from '@dnd-kit/core'
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
-import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable'
+import { useSearchParams } from 'react-router-dom'
+import { DndContext, DragOverlay, useDroppable, closestCorners } from '@dnd-kit/core'
+import type { DragEndEvent, DragStartEvent, DragOverEvent } from '@dnd-kit/core'
+import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { useSensors, useSensor, PointerSensor, KeyboardSensor } from '@dnd-kit/core'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'framer-motion'
 import { useFCStore } from '../store'
@@ -10,21 +13,73 @@ import Badge from './ui/Badge'
 import Avatar from './ui/Avatar'
 import { fetchProfiles } from '../services/users'
 import { logEvent } from '../utils/telemetry'
+import { useDebounce } from '../utils/debounce'
+import { STATUS_MAP, STATUS_TO_ID, getStatusIcon } from '../utils/status'
+import { applyFilters, hasActiveFilters, clearFilters } from '../utils/filters'
 
 const statuses: IssueStatus[] = ['Todo','In Progress','In Review','Done']
 
-const getStatusIcon = (status: IssueStatus) => {
-  const icons: Record<IssueStatus, string> = {
-    'Todo': 'assignment',
-    'In Progress': 'play_arrow',
-    'In Review': 'visibility',
-    'Done': 'check_circle'
-  }
-  return icons[status]
+// Droppable Column Component
+function DroppableColumn({ 
+  status, 
+  issues, 
+  mapName, 
+  dragging 
+}: { 
+  status: IssueStatus
+  issues: Issue[]
+  mapName: (id?: string | null) => string
+  dragging: {id: string, saving: boolean} | null
+}) {
+  const columnId = STATUS_TO_ID[status]
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ 
+    id: columnId, 
+    data: { status: columnId } 
+  })
+
+  const isActive = Boolean(isOver)
+
+  const baseClasses = "rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-sm p-3 md:p-4 transition-colors hover:border-[var(--accent)] min-h-[220px]"
+
+  const activeClasses = isActive ? 'ring-2 ring-[var(--accent)] ring-offset-1' : ''
+
+  return (
+    <motion.div
+      ref={setDropRef}
+      data-column-id={columnId}
+      data-testid={`column-${columnId}`}
+      className={`${baseClasses} ${activeClasses}`}
+    >
+      {/* Column Header */}
+      <div className="flex items-center gap-2 truncate mb-4">
+        <div className="shrink-0" aria-hidden="true">
+          {getStatusIcon(status)}
+        </div>
+        <span className="font-semibold truncate text-[var(--text)]">{status}</span>
+        <span className="ml-auto text-sm text-[var(--muted)] shrink-0" data-testid="column-count">
+          {issues.length}
+        </span>
+      </div>
+
+      {/* Issues */}
+      <SortableContext items={issues.map(i => i.id)} strategy={verticalListSortingStrategy}>
+        <div className="space-y-3">
+          {issues.map((issue) => (
+            <DraggableCard 
+              key={issue.id} 
+              issue={issue} 
+              mapName={mapName} 
+              saving={dragging?.id === issue.id && dragging?.saving}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </motion.div>
+  )
 }
 
 // Draggable Card Component
-function DraggableCard({ issue, mapName }: { issue: Issue; mapName: (id?: string | null) => string }) {
+function DraggableCard({ issue, mapName, saving = false }: { issue: Issue; mapName: (id?: string | null) => string; saving?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: issue.id })
   
   const style = {
@@ -41,18 +96,29 @@ function DraggableCard({ issue, mapName }: { issue: Issue; mapName: (id?: string
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ y: -2, scale: 1.01 }}
-      className={`rounded-lg p-4 cursor-move bg-[var(--background)] shadow-sm border border-[var(--border)] ${
+      className={`rounded-lg p-4 cursor-move bg-[var(--background)] shadow-sm border border-[var(--border)] focus:ring-2 focus:ring-[var(--accent)] focus:outline-none ${
         isDragging ? 'shadow-lg rotate-1 scale-105' : ''
       } transition-all duration-200`}
+      data-testid={`issue-${issue.id}`}
+      role="button"
+      tabIndex={0}
+      aria-label={`Issue ${issue.id}: ${issue.title}. Status: ${issue.status}. Priority: ${issue.priority}. Drag to change status.`}
     >
       {/* Issue Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="text-xs font-mono px-2 py-1 rounded bg-[var(--panel)] text-[var(--muted)]">
           {issue.id}
         </div>
-        <Badge className={`priority ${issue.priority}`}>
-          {issue.priority}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {saving && (
+            <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-600 border border-yellow-500/30" data-testid="saving-badge">
+              Saving...
+            </span>
+          )}
+          <Badge className={`priority ${issue.priority}`}>
+            {issue.priority}
+          </Badge>
+        </div>
       </div>
 
       {/* Issue Title */}
@@ -87,18 +153,39 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
   const moveIssueStatus = useFCStore(s => s.moveIssueStatus)
   const sprints = useFCStore(s => s.sprints)
   
-  const [filters, setFilters] = useState({
-    title: '',
-    assigneeId: '',
-    priority: ''
-  })
+  const [searchParams, setSearchParams] = useSearchParams()
+  
+  const filters = useMemo(() => ({
+    title: searchParams.get('q') || '',
+    assigneeId: searchParams.get('assignee') || '',
+    priority: searchParams.get('prio') || ''
+  }), [searchParams])
 
   const updateFilters = useCallback((newFilters: Partial<typeof filters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
-  }, [])
+    const params = new URLSearchParams(searchParams)
+    Object.entries(newFilters).forEach(([key, value]) => {
+      const paramKey = key === 'title' ? 'q' : key
+      if (value) {
+        params.set(paramKey, value)
+      } else {
+        params.delete(paramKey)
+      }
+    })
+    setSearchParams(params)
+  }, [searchParams, setSearchParams])
   
   const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [dragging, setDragging] = useState<{id: string, saving: boolean} | null>(null)
+  const [overColumn, setOverColumn] = useState<string | null>(null)
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   // Get active sprint and calculate progress - memoized
   const activeSprint = useMemo(() => sprints.find(s => s.status === "Active"), [sprints])
@@ -126,20 +213,17 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
     }
   }, [profiles])
 
+  // Debounce title filter
+  const debouncedTitle = useDebounce(filters.title, 300)
+
   const filteredIssues = useMemo(() => {
-    return issues.filter(issue => {
-      if (filters.title && !issue.title.toLowerCase().includes(filters.title.toLowerCase())) {
-        return false
-      }
-      if (filters.assigneeId && !(issue.assigneeId?.toLowerCase().includes(filters.assigneeId.toLowerCase()) ?? false)) {
-        return false
-      }
-      if (filters.priority && issue.priority !== filters.priority) {
-        return false
-      }
-      return true
-    })
-  }, [issues, filters.title, filters.assigneeId, filters.priority])
+    const filterOptions = {
+      title: debouncedTitle,
+      assigneeId: filters.assigneeId,
+      priority: filters.priority
+    }
+    return applyFilters(issues, filterOptions, mapName)
+  }, [issues, debouncedTitle, filters.assigneeId, filters.priority, mapName])
 
   // Group issues by status
   const columns: Record<IssueStatus, Issue[]> = useMemo(() => ({
@@ -153,46 +237,85 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
     setActiveId(event.active.id as string)
   }, [])
 
+  const onDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event
+    
+    if (!over) {
+      setOverColumn(null)
+      return
+    }
+
+    // Check if over a column
+    const overColumnId = over.data.current?.status
+    if (overColumnId && overColumnId in STATUS_MAP) {
+      setOverColumn(overColumnId)
+    } else {
+      setOverColumn(null)
+    }
+  }, [])
+
   const onDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveId(null)
+    setOverColumn(null)
 
     if (!over) {
-      console.log('No drop target')
+      console.log('No drop target - aborting drag')
       return
     }
 
     const issueId = active.id as string
-    const overCol = over.id as IssueStatus | string
+    const overColumnId = over.data.current?.status
     
-    console.log('Drag end:', { issueId, overCol, overData: over.data })
+    // Debug logging
+    if (import.meta.env.DEV) {
+      console.log('Drag end:', { 
+        activeId: active.id, 
+        overId: over.id, 
+        overData: over.data.current 
+      })
+    }
 
     // Check if dropped on a valid status column
-    if (overCol === "Todo" || overCol === "In Progress" || overCol === "In Review" || overCol === "Done") {
-      const issue = filteredIssues.find(i => i.id === issueId)
-      if (issue) {
-        console.log('Moving issue:', { from: issue.status, to: overCol })
-        try {
-          logEvent({ t: "dnd_move", from: issue.status, to: overCol, at: Date.now() })
-        } catch (error) {
-          console.warn('Failed to log event:', error)
-        }
-        try {
-          await moveIssueStatus(issueId, overCol)
-          console.log('Issue moved successfully')
-        } catch (error) {
-          console.error('Failed to move issue:', error)
-        }
-      } else {
-        console.log('Issue not found:', issueId)
-      }
-    } else {
-      console.log('Invalid drop target:', overCol)
+    const newStatus = overColumnId ? STATUS_MAP[overColumnId] : null
+    if (!newStatus) {
+      console.log('Invalid drop target:', overColumnId)
+      return
+    }
+
+    const issue = filteredIssues.find(i => i.id === issueId)
+    if (!issue) {
+      console.log('Issue not found:', issueId)
+      return
+    }
+
+    // Don't move if already in the same status
+    if (issue.status === newStatus) {
+      console.log('Already in same status - no change needed')
+      return
+    }
+
+    // Set optimistic UI state
+    setDragging({ id: issueId, saving: true })
+
+    try {
+      // Log telemetry
+      logEvent({ t: "dnd_move", from: issue.status, to: newStatus, at: Date.now() })
+      
+      // Move issue
+      await moveIssueStatus(issueId, newStatus)
+      
+      // Clear optimistic state on success
+      setDragging(null)
+    } catch (error) {
+      console.error('Failed to move issue:', error)
+      // Clear optimistic state on error (the store will handle rollback)
+      setDragging(null)
     }
   }, [filteredIssues, moveIssueStatus])
 
   return (
-    <div className="card p-6">
+    <div className="card p-6" data-testid="kanban-board">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
         <div className="flex items-center gap-4">
@@ -211,8 +334,9 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
               placeholder="Search title..."
               value={filters.title}
               onChange={(e) => updateFilters({ title: e.target.value })}
-              className="input"
+              className="input focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
               list="title-suggestions"
+              aria-label="Search issues by title"
             />
             <datalist id="title-suggestions">
               {filteredIssues.map(issue => (
@@ -224,8 +348,9 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
               placeholder="Filter assignee..."
               value={filters.assigneeId}
               onChange={(e) => updateFilters({ assigneeId: e.target.value })}
-              className="input"
+              className="input focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
               list="assignee-suggestions"
+              aria-label="Filter issues by assignee"
             />
             <datalist id="assignee-suggestions">
               {profiles.map(profile => (
@@ -235,7 +360,8 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
             <select
               value={filters.priority}
               onChange={(e) => updateFilters({ priority: e.target.value })}
-              className="input theme-select"
+              className="input theme-select focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+              aria-label="Filter issues by priority"
             >
               <option value="">All Priorities</option>
               <option value="P0">P0</option>
@@ -245,8 +371,17 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
               <option value="P4">P4</option>
               <option value="P5">P5</option>
             </select>
+            {hasActiveFilters(filters) && (
+              <button
+                onClick={() => updateFilters(clearFilters())}
+                className="px-3 py-1 text-xs rounded-full bg-[var(--accent)] text-[var(--background)] hover:opacity-80 transition-opacity focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                aria-label="Clear all filters"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
-          <div className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 bg-[var(--panel)] text-[var(--text)]">
+          <div className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 bg-[var(--panel)] text-[var(--text)]" data-testid="issue-count">
             <span className="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
             {filteredIssues.length} issues
           </div>
@@ -254,7 +389,13 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
       </div>
 
       {/* Kanban Columns */}
-      <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+      >
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {(Object.keys(columns) as IssueStatus[]).map((status, index) => {
             const statusIssues = columns[status]
@@ -265,49 +406,27 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="rounded-lg border-2 border-dashed min-h-[400px] p-4 bg-[var(--panel)] transition-all duration-300"
-                id={status}
               >
-                {/* Column Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--background)] flex items-center justify-center">
-                      <span className="text-lg text-[var(--text)]">{getStatusIcon(status)}</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-lg text-[var(--text)]">{status}</span>
-                      <div className="text-xs uppercase tracking-wide text-[var(--muted)]">
-                        {statusIssues.length} {statusIssues.length === 1 ? 'issue' : 'issues'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-[var(--background)] flex items-center justify-center">
-                    <span className="text-sm font-bold text-[var(--text)]">
-                      {statusIssues.length}
-                    </span>
-                  </div>
-                </div>
-
-
-                {/* Issues */}
-                <SortableContext items={statusIssues.map(i => i.id)}>
-                  <div className="space-y-3">
-                    {statusIssues.map((issue) => (
-                      <DraggableCard key={issue.id} issue={issue} mapName={mapName} />
-                    ))}
-                  </div>
-                </SortableContext>
+                <DroppableColumn
+                  status={status}
+                  issues={statusIssues}
+                  mapName={mapName}
+                  dragging={dragging}
+                />
               </motion.div>
             )
           })}
         </div>
         
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeId ? (
-            <DraggableCard 
-              issue={filteredIssues.find(i => i.id === activeId)!} 
-              mapName={mapName} 
-            />
+            <div className="pointer-events-none">
+              <DraggableCard 
+                issue={filteredIssues.find(i => i.id === activeId)!} 
+                mapName={mapName}
+                saving={false}
+              />
+            </div>
           ) : null}
         </DragOverlay>
       </DndContext>

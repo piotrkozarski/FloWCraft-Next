@@ -4,6 +4,7 @@
   --bg-image: radial-gradient(circle at top, #2a0000 0%, #0b0000 100%);
   --surface: #1A0D0D;
   --panel: #160909;
+  --card: #1F0F0F;        /* slightly lighter than panel for cards */
   --text: #E6E3E3;
   --muted: #BFAFAF;
   --border: #3C0F0F;
@@ -19,6 +20,7 @@
   --bg-image: radial-gradient(1200px 800px at 20% -10%, #1b325a 0%, #0a1326 45%, #050915 100%);
   --surface: #0B1326;     /* granat */
   --panel: #101a33;
+  --card: #152040;        /* slightly lighter than panel for cards */
   --text: #E7ECF7;
   --muted: #B8C4DC;
   --border: #1e2a4a;

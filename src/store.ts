@@ -273,6 +273,14 @@ export const useFCStore = create<FCState>((set, get) => ({
   },
 
   moveIssueStatus: async (id, status) => {
+    // Store original status for potential rollback
+    const originalIssue = get().issues.find(issue => issue.id === id);
+    if (!originalIssue) {
+      throw new Error(`Issue with id ${id} not found`);
+    }
+    const originalStatus = originalIssue.status;
+    const originalUpdatedAt = originalIssue.updatedAt;
+
     // Update local state immediately for responsive UI
     set(state => ({
       issues: state.issues.map(issue =>
@@ -292,16 +300,22 @@ export const useFCStore = create<FCState>((set, get) => ({
 
       if (error) {
         console.error('Error updating issue status:', error);
-        // Revert local state on error
+        // Revert local state on error using original values
         set(state => ({
           issues: state.issues.map(issue =>
-            issue.id === id ? { ...issue, status: issue.status, updatedAt: issue.updatedAt } : issue
+            issue.id === id ? { ...issue, status: originalStatus, updatedAt: originalUpdatedAt } : issue
           )
         }));
         throw error;
       }
     } catch (error) {
       console.error('Failed to update issue status in database:', error);
+      // Revert local state on error using original values
+      set(state => ({
+        issues: state.issues.map(issue =>
+          issue.id === id ? { ...issue, status: originalStatus, updatedAt: originalUpdatedAt } : issue
+        )
+      }));
       throw error;
     }
   },
