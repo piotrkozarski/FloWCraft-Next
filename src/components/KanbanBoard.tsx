@@ -84,7 +84,6 @@ interface KanbanBoardProps {
 }
 
 export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
-  console.log('KanbanBoard rendered with:', { issues, sprintName })
   const { moveIssueStatus, sprints } = useFCStore(s => ({ 
     moveIssueStatus: s.moveIssueStatus,
     sprints: s.sprints
@@ -117,23 +116,27 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
   }, [])
 
   // Helper to map assignee ID to name
-  const mapName = (id?: string | null) => {
-    const p = profiles.find(x => x.id === id)
-    return p?.username || p?.email || "Unassigned"
-  }
+  const mapName = useMemo(() => {
+    return (id?: string | null) => {
+      const p = profiles.find(x => x.id === id)
+      return p?.username || p?.email || "Unassigned"
+    }
+  }, [profiles])
 
-  const filteredIssues = issues.filter(issue => {
-    if (filters.title && !issue.title.toLowerCase().includes(filters.title.toLowerCase())) {
-      return false
-    }
-    if (filters.assigneeId && !(issue.assigneeId?.toLowerCase().includes(filters.assigneeId.toLowerCase()) ?? false)) {
-      return false
-    }
-    if (filters.priority && issue.priority !== filters.priority) {
-      return false
-    }
-    return true
-  })
+  const filteredIssues = useMemo(() => {
+    return issues.filter(issue => {
+      if (filters.title && !issue.title.toLowerCase().includes(filters.title.toLowerCase())) {
+        return false
+      }
+      if (filters.assigneeId && !(issue.assigneeId?.toLowerCase().includes(filters.assigneeId.toLowerCase()) ?? false)) {
+        return false
+      }
+      if (filters.priority && issue.priority !== filters.priority) {
+        return false
+      }
+      return true
+    })
+  }, [issues, filters.title, filters.assigneeId, filters.priority])
 
   // Group issues by status
   const columns: Record<IssueStatus, Issue[]> = useMemo(() => ({
