@@ -170,6 +170,12 @@ Switch themes using the theme toggle in the sidebar.
 4. Push to branch: `git push origin feature-name`
 5. Submit a pull request
 
+## OST (cert)
+
+This project implements an Objective, Strategy, and Tactics (OST) framework with measurable goals and metrics. See [OST Metrics Documentation](docs/OST.metrics.md) for detailed North Star Goals, opportunities, and experiments.
+
+**North Star Goal**: Increase completed tasks in active sprints to ≥80% within 2 weeks of sprint start.
+
 ## License
 
 This project is licensed under the MIT License.

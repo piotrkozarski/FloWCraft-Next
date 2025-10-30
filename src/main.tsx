@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
+import Dashboard from './pages/Dashboard'
 import Issues from './pages/Issues'
 import CurrentSprint from './pages/CurrentSprint'
 import Sprints from './pages/Sprints'
@@ -37,7 +38,9 @@ const router = createBrowserRouter([
         path: '',
         element: <App />,
         children: [
-          { index: true, element: <Issues /> },
+          { index: true, element: <Dashboard /> },
+          { path: 'dashboard', element: <Dashboard /> },
+          { path: 'issues', element: <Issues /> },
           { path: 'current', element: <CurrentSprint /> },
           { path: 'sprints', element: <Sprints /> },
           { path: 'my-issues', element: <MyIssues /> },

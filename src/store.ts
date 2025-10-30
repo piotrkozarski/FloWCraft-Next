@@ -23,6 +23,7 @@ type FCState = {
   updateIssue(id: string, patch: Partial<Omit<Issue, 'id' | 'createdAt'>>): Promise<void>;
   deleteIssue(id: string): Promise<void>;
   updateIssueStatus(id: string, status: IssueStatus): Promise<void>;
+  moveIssueStatus(id: string, status: IssueStatus): void;
 
   // Assignment
   assignIssueToSprint(id: string, sprintId: string | null): Promise<void>;
@@ -269,6 +270,14 @@ export const useFCStore = create<FCState>((set, get) => ({
   updateIssueStatus: async (id, status) => {
     const { updateIssue } = get();
     await updateIssue(id, { status });
+  },
+
+  moveIssueStatus: (id, status) => {
+    set(state => ({
+      issues: state.issues.map(issue =>
+        issue.id === id ? { ...issue, status, updatedAt: new Date().toISOString() } : issue
+      )
+    }));
   },
 
   assignIssueToSprint: async (id, sprintId) => {

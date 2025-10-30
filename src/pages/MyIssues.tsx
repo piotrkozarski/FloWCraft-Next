@@ -4,6 +4,7 @@ import { useUI } from "@/store/ui"
 import { useAuth } from "@/auth/AuthContext"
 import type { Issue } from "@/types"
 import { fetchProfiles } from "@/services/users"
+import { logEvent } from "@/utils/telemetry"
 
 export default function MyIssues() {
   const issues = useFCStore(s => s.issues)
@@ -17,7 +18,9 @@ export default function MyIssues() {
   }, [issues, user])
 
   const filtered = useMemo(() => 
-    myIssues.filter(i => i.title.toLowerCase().includes(q.toLowerCase())), 
+    myIssues
+      .filter(i => i.title.toLowerCase().includes(q.toLowerCase()))
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()), 
     [myIssues, q]
   )
   
@@ -26,6 +29,11 @@ export default function MyIssues() {
   // Load profiles on mount
   useEffect(() => {
     fetchProfiles().then(setProfiles)
+  }, [])
+
+  // Log My Issues open event
+  useEffect(() => {
+    logEvent({ t: "my_issues_open", at: Date.now() })
   }, [])
 
   // Helper to map assignee ID to name

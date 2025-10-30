@@ -23,12 +23,25 @@ export default function Sprints(){
             const inSprint=issues.filter(i=>i.sprintId===s.id)
             const done=inSprint.filter(i=>i.status==='Done').length
             const pct=inSprint.length?Math.round(done/inSprint.length*100):0
+            
+            // Check if sprint is Active and donePct < 80 on 2 days before endDate
+            const today = new Date()
+            const endDate = new Date(s.endDate)
+            const twoDaysBefore = new Date(endDate)
+            twoDaysBefore.setDate(endDate.getDate() - 2)
+            const isWarning = s.status === 'Active' && pct < 80 && today >= twoDaysBefore && today <= endDate
+            
             return (
               <div key={s.id} className="md-card p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="font-semibold">{s.name}</div>
                   <Chip>{s.status}</Chip>
                   <div className="text-sm text-[var(--muted)]">[{s.startDate} → {s.endDate}]</div>
+                  {isWarning && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-600 border border-yellow-500/30">
+                      ⚠️ Low progress
+                    </span>
+                  )}
                   <div className="ml-auto flex gap-2">
                     {s.status === "Planned" && (
                       <div className="flex items-center gap-1">

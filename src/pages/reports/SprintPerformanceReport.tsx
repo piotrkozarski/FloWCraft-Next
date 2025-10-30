@@ -73,7 +73,12 @@ export default function SprintPerformanceReport() {
 
         <div className="card rounded-xl p-4">
           <div className="text-sm text-[var(--muted)] mb-1">% Done</div>
-          <div className="text-3xl font-semibold">{agg.donePct}%</div>
+          <div className="text-3xl font-semibold flex items-center gap-2">
+            {agg.donePct}%
+            <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--panel)]/70">
+              target ≥ 80%
+            </span>
+          </div>
           <div className="w-full h-2 mt-3 rounded bg-[var(--panel)] overflow-hidden">
             <div className="h-2 bg-emerald-600" style={{ width: `${agg.donePct}%` }} />
           </div>

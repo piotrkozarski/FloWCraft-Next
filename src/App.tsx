@@ -54,7 +54,8 @@ export default function App() {
             FlowCraft
           </div>
           <nav>
-            <NavLink to="/" end><ListTodo className="w-4 h-4" /> Issues</NavLink>
+            <NavLink to="/" end><LayoutDashboard className="w-4 h-4" /> Dashboard</NavLink>
+            <NavLink to="/issues"><ListTodo className="w-4 h-4" /> Issues</NavLink>
             <NavLink to="/my-issues" className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <UserCircle className="w-4 h-4" />
