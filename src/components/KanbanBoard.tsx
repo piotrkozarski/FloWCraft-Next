@@ -157,15 +157,21 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
     const { active, over } = event
     setActiveId(null)
 
-    if (!over) return
+    if (!over) {
+      console.log('No drop target')
+      return
+    }
 
     const issueId = active.id as string
     const overCol = over.id as IssueStatus | string
+    
+    console.log('Drag end:', { issueId, overCol, overData: over.data })
 
     // Check if dropped on a valid status column
     if (overCol === "Todo" || overCol === "In Progress" || overCol === "In Review" || overCol === "Done") {
       const issue = filteredIssues.find(i => i.id === issueId)
       if (issue) {
+        console.log('Moving issue:', { from: issue.status, to: overCol })
         try {
           logEvent({ t: "dnd_move", from: issue.status, to: overCol, at: Date.now() })
         } catch (error) {
@@ -173,10 +179,15 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
         }
         try {
           await moveIssueStatus(issueId, overCol)
+          console.log('Issue moved successfully')
         } catch (error) {
           console.error('Failed to move issue:', error)
         }
+      } else {
+        console.log('Issue not found:', issueId)
       }
+    } else {
+      console.log('Invalid drop target:', overCol)
     }
   }, [filteredIssues, moveIssueStatus])
 
@@ -185,12 +196,12 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[#EADDFF] flex items-center justify-center">
-            <span className="text-[#21005E] text-lg">📋</span>
+          <div className="w-10 h-10 rounded-lg bg-[var(--accent)] flex items-center justify-center">
+            <span className="text-[var(--background)] text-lg">📋</span>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-[#21005E]">Kanban Board</h3>
-            <p className="text-sm text-slate-600">{sprintName} • Drag and drop to update status</p>
+            <h3 className="text-xl font-bold text-[var(--text)]">Kanban Board</h3>
+            <p className="text-sm text-[var(--muted)]">{sprintName} • Drag and drop to update status</p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -223,8 +234,8 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
               <option value="P5">P5</option>
             </select>
           </div>
-          <div className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 bg-[#E8DEF8] text-[#1D192B]">
-            <span className="w-2 h-2 rounded-full bg-[#625B71]"></span>
+          <div className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 bg-[var(--panel)] text-[var(--text)]">
+            <span className="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
             {filteredIssues.length} issues
           </div>
         </div>
@@ -267,12 +278,12 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
 
                 {/* Sprint Progress Bar (if active sprint) */}
                 {activeSprint && status === "Todo" && (
-                  <div className="mb-4 p-3 bg-white rounded-lg border border-[#E6E0E9]">
+                  <div className="mb-4 p-3 bg-[var(--background)] rounded-lg border border-[var(--border)]">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-[#21005E]">Sprint Progress</span>
-                      <span className="text-xs text-slate-600">{donePct}%</span>
+                      <span className="text-sm font-medium text-[var(--text)]">Sprint Progress</span>
+                      <span className="text-xs text-[var(--muted)]">{donePct}%</span>
                     </div>
-                    <div className="w-full bg-[#F3EDF7] rounded-full h-2">
+                    <div className="w-full bg-[var(--panel)] rounded-full h-2">
                       <div 
                         className={`h-2 rounded-full transition-all duration-300 ${
                           donePct >= 80 ? 'bg-green-500' : donePct >= 60 ? 'bg-yellow-500' : 'bg-red-500'
@@ -281,7 +292,7 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
                       />
                     </div>
                     {donePct < 80 && (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--panel)]/70 mt-1 inline-block">
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--panel)]/70 mt-1 inline-block text-[var(--muted)]">
                         target ≥ 80%
                       </span>
                     )}
