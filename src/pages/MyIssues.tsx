@@ -20,7 +20,11 @@ export default function MyIssues() {
   const filtered = useMemo(() => 
     myIssues
       .filter(i => i.title.toLowerCase().includes(q.toLowerCase()))
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()), 
+      .sort((a, b) => {
+        const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+        const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
+        return dateB - dateA
+      }), 
     [myIssues, q]
   )
   

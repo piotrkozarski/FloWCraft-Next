@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay } from '@dnd-kit/core'
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'framer-motion'
