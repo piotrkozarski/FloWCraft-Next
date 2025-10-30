@@ -41,13 +41,13 @@ function DraggableCard({ issue, mapName }: { issue: Issue; mapName: (id?: string
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ y: -2, scale: 1.01 }}
-      className={`rounded-lg p-4 cursor-move bg-white shadow-sm border border-[#E6E0E9] ${
+      className={`rounded-lg p-4 cursor-move bg-[var(--background)] shadow-sm border border-[var(--border)] ${
         isDragging ? 'shadow-lg rotate-1 scale-105' : ''
       } transition-all duration-200`}
     >
       {/* Issue Header */}
       <div className="flex items-center justify-between mb-3">
-        <div className="text-xs font-mono px-2 py-1 rounded bg-[#F3EDF7] text-slate-600">
+        <div className="text-xs font-mono px-2 py-1 rounded bg-[var(--panel)] text-[var(--muted)]">
           {issue.id}
         </div>
         <Badge className={`priority-${issue.priority.toLowerCase()}`}>
@@ -56,21 +56,21 @@ function DraggableCard({ issue, mapName }: { issue: Issue; mapName: (id?: string
       </div>
 
       {/* Issue Title */}
-      <h4 className="font-bold mb-3 line-clamp-2 text-sm leading-relaxed text-[#21005E]">
+      <h4 className="font-bold mb-3 line-clamp-2 text-sm leading-relaxed text-[var(--text)]">
         {issue.title}
       </h4>
 
       {/* Issue Description */}
       {issue.description && (
-        <p className="text-xs mb-4 line-clamp-2 leading-relaxed text-slate-600">
+        <p className="text-xs mb-4 line-clamp-2 leading-relaxed text-[var(--muted)]">
           {issue.description}
         </p>
       )}
 
       {/* Assignee */}
-      <div className="flex items-center gap-2 pt-2 border-t border-[#E6E0E9]">
+      <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
         <Avatar name={mapName(issue.assigneeId)} />
-        <span className="text-xs font-medium text-slate-600">
+        <span className="text-xs font-medium text-[var(--muted)]">
           {mapName(issue.assigneeId)}
         </span>
       </div>
@@ -166,7 +166,11 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
     if (overCol === "Todo" || overCol === "In Progress" || overCol === "In Review" || overCol === "Done") {
       const issue = filteredIssues.find(i => i.id === issueId)
       if (issue) {
-        logEvent({ t: "dnd_move", from: issue.status, to: overCol, at: Date.now() })
+        try {
+          logEvent({ t: "dnd_move", from: issue.status, to: overCol, at: Date.now() })
+        } catch (error) {
+          console.warn('Failed to log event:', error)
+        }
         try {
           await moveIssueStatus(issueId, overCol)
         } catch (error) {
@@ -177,7 +181,7 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
   }, [filteredIssues, moveIssueStatus])
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-[#E6E0E9] p-6">
+    <div className="card p-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
         <div className="flex items-center gap-4">
@@ -196,19 +200,19 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
               placeholder="Search title..."
               value={filters.title}
               onChange={(e) => updateFilters({ title: e.target.value })}
-              className="border border-[#E6E0E9] rounded-full px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-[#D0BCFF]"
+              className="input"
             />
             <input
               type="text"
               placeholder="Filter assignee..."
               value={filters.assigneeId}
               onChange={(e) => updateFilters({ assigneeId: e.target.value })}
-              className="border border-[#E6E0E9] rounded-full px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-[#D0BCFF]"
+              className="input"
             />
             <select
               value={filters.priority}
               onChange={(e) => updateFilters({ priority: e.target.value })}
-              className="border border-[#E6E0E9] rounded-full px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-[#D0BCFF]"
+              className="input"
             >
               <option value="">All Priorities</option>
               <option value="P0">P0</option>
@@ -238,24 +242,24 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="rounded-lg border-2 border-dashed min-h-[400px] p-4 bg-[#F3EDF7] transition-all duration-300"
+                className="rounded-lg border-2 border-dashed min-h-[400px] p-4 bg-[var(--panel)] transition-all duration-300"
                 id={status}
               >
                 {/* Column Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-                      <span className="text-lg text-slate-600">{getStatusIcon(status)}</span>
+                    <div className="w-8 h-8 rounded-lg bg-[var(--background)] flex items-center justify-center">
+                      <span className="text-lg text-[var(--text)]">{getStatusIcon(status)}</span>
                     </div>
                     <div>
-                      <span className="font-bold text-lg text-[#21005E]">{status}</span>
-                      <div className="text-xs uppercase tracking-wide text-slate-600">
+                      <span className="font-bold text-lg text-[var(--text)]">{status}</span>
+                      <div className="text-xs uppercase tracking-wide text-[var(--muted)]">
                         {statusIssues.length} {statusIssues.length === 1 ? 'issue' : 'issues'}
                       </div>
                     </div>
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-                    <span className="text-sm font-bold text-[#21005E]">
+                  <div className="w-6 h-6 rounded-full bg-[var(--background)] flex items-center justify-center">
+                    <span className="text-sm font-bold text-[var(--text)]">
                       {statusIssues.length}
                     </span>
                   </div>
