@@ -295,7 +295,9 @@ export const useFCStore = create<FCState>((set, get) => ({
         status: input.status,
         start_date: input.startDate,
         end_date: input.endDate,
-        created_by: user?.id
+        created_by: user?.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       const { data, error } = await supabase
