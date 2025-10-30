@@ -34,11 +34,13 @@ describe('IssueCard', () => {
     updatedAt: '2024-01-01T00:00:00Z'
   }
 
-  it('should not contain "All Issues" text', () => {
+  it('should not contain section header text', () => {
     render(<IssueCard issue={mockIssue} />)
     
-    // Check that "All Issues" text is not present
+    // Check that section header texts are not present
     expect(screen.queryByText('All Issues')).not.toBeInTheDocument()
+    expect(screen.queryByText('Current Sprint')).not.toBeInTheDocument()
+    expect(screen.queryByText('Kanban Board')).not.toBeInTheDocument()
   })
 
   it('should render issue title', () => {

@@ -327,75 +327,64 @@ const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoar
 
   return (
     <div className="card p-6" data-testid="kanban-board">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-[var(--accent)] flex items-center justify-center">
-            <span className="text-[var(--background)] text-lg">📋</span>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-[var(--text)]">Kanban Board</h3>
-            <p className="text-sm text-[var(--muted)]">{sprintName} • Drag and drop to update status</p>
-          </div>
-        </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <input
-              type="text"
-              placeholder="Search title..."
-              value={filters.title}
-              onChange={(e) => updateFilters({ title: e.target.value })}
-              className="input focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-              list="title-suggestions"
-              aria-label="Search issues by title"
-            />
-            <datalist id="title-suggestions">
-              {filteredIssues.map(issue => (
-                <option key={issue.id} value={issue.title} />
-              ))}
-            </datalist>
-            <input
-              type="text"
-              placeholder="Filter assignee..."
-              value={filters.assigneeId}
-              onChange={(e) => updateFilters({ assigneeId: e.target.value })}
-              className="input focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-              list="assignee-suggestions"
-              aria-label="Filter issues by assignee"
-            />
-            <datalist id="assignee-suggestions">
-              {profiles.map(profile => (
-                <option key={profile.id} value={profile.username || profile.email || 'Unassigned'} />
-              ))}
-            </datalist>
-            <select
-              value={filters.priority}
-              onChange={(e) => updateFilters({ priority: e.target.value })}
-              className="input theme-select focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-              aria-label="Filter issues by priority"
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search title..."
+            value={filters.title}
+            onChange={(e) => updateFilters({ title: e.target.value })}
+            className="input focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+            list="title-suggestions"
+            aria-label="Search issues by title"
+          />
+          <datalist id="title-suggestions">
+            {filteredIssues.map(issue => (
+              <option key={issue.id} value={issue.title} />
+            ))}
+          </datalist>
+          <input
+            type="text"
+            placeholder="Filter assignee..."
+            value={filters.assigneeId}
+            onChange={(e) => updateFilters({ assigneeId: e.target.value })}
+            className="input focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+            list="assignee-suggestions"
+            aria-label="Filter issues by assignee"
+          />
+          <datalist id="assignee-suggestions">
+            {profiles.map(profile => (
+              <option key={profile.id} value={profile.username || profile.email || 'Unassigned'} />
+            ))}
+          </datalist>
+          <select
+            value={filters.priority}
+            onChange={(e) => updateFilters({ priority: e.target.value })}
+            className="input theme-select focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+            aria-label="Filter issues by priority"
+          >
+            <option value="">All Priorities</option>
+            <option value="P0">P0</option>
+            <option value="P1">P1</option>
+            <option value="P2">P2</option>
+            <option value="P3">P3</option>
+            <option value="P4">P4</option>
+            <option value="P5">P5</option>
+          </select>
+          {hasActiveFilters(filters) && (
+            <button
+              onClick={() => updateFilters(clearFilters())}
+              className="px-3 py-1 text-xs rounded-full bg-[var(--accent)] text-[var(--background)] hover:opacity-80 transition-opacity focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+              aria-label="Clear all filters"
             >
-              <option value="">All Priorities</option>
-              <option value="P0">P0</option>
-              <option value="P1">P1</option>
-              <option value="P2">P2</option>
-              <option value="P3">P3</option>
-              <option value="P4">P4</option>
-              <option value="P5">P5</option>
-            </select>
-            {hasActiveFilters(filters) && (
-              <button
-                onClick={() => updateFilters(clearFilters())}
-                className="px-3 py-1 text-xs rounded-full bg-[var(--accent)] text-[var(--background)] hover:opacity-80 transition-opacity focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                aria-label="Clear all filters"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-          <div className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 bg-[var(--panel)] text-[var(--text)]" data-testid="issue-count">
-            <span className="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
-            {filteredIssues.length} issues
-          </div>
+              Clear filters
+            </button>
+          )}
+        </div>
+        <div className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 bg-[var(--panel)] text-[var(--text)]" data-testid="issue-count">
+          <span className="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+          {filteredIssues.length} issues
         </div>
       </div>
 

@@ -22,7 +22,24 @@ jest.mock('../../src/utils/telemetry', () => ({
   logEvent: jest.fn()
 }))
 
-describe('DraggableCard', () => {
+// Mock the debounce hook
+jest.mock('../../src/utils/debounce', () => ({
+  useDebounce: (value: any) => value
+}))
+
+// Mock the filters
+jest.mock('../../src/utils/filters', () => ({
+  applyFilters: (issues: Issue[]) => issues,
+  hasActiveFilters: () => false,
+  clearFilters: () => ({ title: '', assigneeId: '', priority: '' })
+}))
+
+// Mock react-router-dom
+jest.mock('react-router-dom', () => ({
+  useSearchParams: () => [new URLSearchParams(), jest.fn()]
+}))
+
+describe('KanbanBoard', () => {
   const mockIssues: Issue[] = [
     {
       id: 'TSK-001',
@@ -53,25 +70,24 @@ describe('DraggableCard', () => {
     expect(screen.queryByText('Kanban Board')).not.toBeInTheDocument()
   })
 
-  it('should render issue title', () => {
+  it('should render only filters and kanban columns', () => {
     render(
       <DndContext>
         <KanbanBoard issues={mockIssues} sprintName="Test Sprint" />
       </DndContext>
     )
     
-    // Check that issue title is present
-    expect(screen.getByText('Test Issue 1')).toBeInTheDocument()
-  })
-
-  it('should render issue ID', () => {
-    render(
-      <DndContext>
-        <KanbanBoard issues={mockIssues} sprintName="Test Sprint" />
-      </DndContext>
-    )
+    // Check that filters are present
+    expect(screen.getByPlaceholderText('Search title...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Filter assignee...')).toBeInTheDocument()
     
-    // Check that issue ID is present
-    expect(screen.getByText('TSK-001')).toBeInTheDocument()
+    // Check that issue count is present
+    expect(screen.getByTestId('issue-count')).toBeInTheDocument()
+    
+    // Check that kanban columns are present
+    expect(screen.getByTestId('column-TODO')).toBeInTheDocument()
+    expect(screen.getByTestId('column-IN_PROGRESS')).toBeInTheDocument()
+    expect(screen.getByTestId('column-IN_REVIEW')).toBeInTheDocument()
+    expect(screen.getByTestId('column-DONE')).toBeInTheDocument()
   })
 })
