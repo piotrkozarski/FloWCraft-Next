@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { DndContext, DragOverlay } from '@dnd-kit/core'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable'
@@ -83,22 +83,25 @@ interface KanbanBoardProps {
   sprintName: string
 }
 
-export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
-  const { moveIssueStatus, sprints } = useFCStore(s => ({ 
-    moveIssueStatus: s.moveIssueStatus,
-    sprints: s.sprints
-  }))
+const KanbanBoard = memo(function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
+  const moveIssueStatus = useFCStore(s => s.moveIssueStatus)
+  const sprints = useFCStore(s => s.sprints)
+  
   const [filters, setFilters] = useState({
     title: '',
     assigneeId: '',
     priority: ''
   })
+
+  const updateFilters = useCallback((newFilters: Partial<typeof filters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }))
+  }, [])
   
   const [profiles, setProfiles] = useState<{id:string; username:string|null; email:string|null}[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
 
-  // Get active sprint and calculate progress
-  const activeSprint = sprints.find(s => s.status === "Active")
+  // Get active sprint and calculate progress - memoized
+  const activeSprint = useMemo(() => sprints.find(s => s.status === "Active"), [sprints])
   const issuesInActive = useMemo(
     () => activeSprint ? issues.filter(i => i.sprintId === activeSprint.id) : [],
     [issues, activeSprint]
@@ -146,11 +149,11 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
     "Done": filteredIssues.filter(i => i.status === "Done"),
   }), [filteredIssues])
 
-  function onDragStart(event: DragStartEvent) {
+  const onDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string)
-  }
+  }, [])
 
-  async function onDragEnd(event: DragEndEvent) {
+  const onDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveId(null)
 
@@ -171,7 +174,7 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
         }
       }
     }
-  }
+  }, [filteredIssues, moveIssueStatus])
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-[#E6E0E9] p-6">
@@ -192,19 +195,19 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
               type="text"
               placeholder="Search title..."
               value={filters.title}
-              onChange={(e) => setFilters(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => updateFilters({ title: e.target.value })}
               className="border border-[#E6E0E9] rounded-full px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-[#D0BCFF]"
             />
             <input
               type="text"
               placeholder="Filter assignee..."
               value={filters.assigneeId}
-              onChange={(e) => setFilters(prev => ({ ...prev, assigneeId: e.target.value }))}
+              onChange={(e) => updateFilters({ assigneeId: e.target.value })}
               className="border border-[#E6E0E9] rounded-full px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-[#D0BCFF]"
             />
             <select
               value={filters.priority}
-              onChange={(e) => setFilters(prev => ({ ...prev, priority: e.target.value }))}
+              onChange={(e) => updateFilters({ priority: e.target.value })}
               className="border border-[#E6E0E9] rounded-full px-4 py-2 text-sm w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-[#D0BCFF]"
             >
               <option value="">All Priorities</option>
@@ -305,4 +308,6 @@ export default function KanbanBoard({ issues, sprintName }: KanbanBoardProps) {
       </DndContext>
     </div>
   )
-}
+})
+
+export default KanbanBoard
